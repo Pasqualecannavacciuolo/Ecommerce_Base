@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -92,7 +92,7 @@ export default function BarChartComponent() {
             scale="point"
             padding={{ left: isMobile ? 20 : 50, right: isMobile ? 20 : 50 }}
           />
-          <YAxis />
+          <YAxis type="number" domain={[0, "auto"]} />
           <Tooltip />
           <Legend />
           <Bar dataKey="ordini" background={{ fill: "transparent" }} />
