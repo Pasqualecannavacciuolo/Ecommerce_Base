@@ -43,6 +43,7 @@ import Cookies from "universal-cookie";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { IJWTPayloadExtension } from "@/models/models";
+import BarChartComponent from "./reusable/BarChart";
 
 const cookies = new Cookies(null, { path: "/" });
 
@@ -257,6 +258,124 @@ export default function HomePage() {
               <CardContent>
                 <div className="text-xs text-emerald-500">
                   +135% dallo scorso mese
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
+            <Card x-chunk="dashboard-01-chunk-5">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle>Ordini</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">+2350</div>
+                <p className="text-xs text-emerald-500">
+                  +180.1% from last month
+                </p>
+                <div className="mt-4">
+                  <BarChartComponent />
+                </div>
+              </CardContent>
+            </Card>
+            <Card x-chunk="dashboard-01-chunk-5">
+              <CardHeader>
+                <CardTitle>Recent Sales</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-8">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-row gap-4">
+                    <Avatar className="hidden h-9 w-9 sm:flex">
+                      <AvatarImage src="/avatars/01.png" alt="Avatar" />
+                      <AvatarFallback>OM</AvatarFallback>
+                    </Avatar>
+                    <div className="grid gap-1">
+                      <p className="sm:text-md text-xs lg:text-lg xl:text-lg font-medium leading-none">
+                        Olivia Martin
+                      </p>
+                      <p className="sm:text-md text-xs lg:text-md xl:text-md text-muted-foreground">
+                        olivia.martin@email.com
+                      </p>
+                    </div>
+                    <div className="ml-auto sm:text-md text-xs lg:text-lg xl:text-lg font-medium text-emerald-500">
+                      +$1,999.00
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-row gap-4">
+                    <Avatar className="hidden h-9 w-9 sm:flex">
+                      <AvatarImage src="/avatars/02.png" alt="Avatar" />
+                      <AvatarFallback>JL</AvatarFallback>
+                    </Avatar>
+                    <div className="grid gap-1">
+                      <p className="sm:text-md text-xs lg:text-lg xl:text-lg font-medium leading-none">
+                        Jackson Lee
+                      </p>
+                      <p className="sm:text-md text-xs lg:text-md xl:text-md text-muted-foreground">
+                        jackson.lee@email.com
+                      </p>
+                    </div>
+                    <div className="ml-auto sm:text-md text-xs lg:text-lg xl:text-lg font-medium text-emerald-500">
+                      +$39.00
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-row gap-4">
+                    <Avatar className="hidden h-9 w-9 sm:flex">
+                      <AvatarImage src="/avatars/03.png" alt="Avatar" />
+                      <AvatarFallback>IN</AvatarFallback>
+                    </Avatar>
+                    <div className="grid gap-1">
+                      <p className="sm:text-md text-xs lg:text-lg xl:text-lg font-medium leading-none">
+                        Isabella Nguyen
+                      </p>
+                      <p className="sm:text-md text-xs lg:text-md xl:text-md text-muted-foreground">
+                        isabella.nguyen@email.com
+                      </p>
+                    </div>
+                    <div className="ml-auto sm:text-md text-xs lg:text-lg xl:text-lg font-medium text-emerald-500">
+                      +$299.00
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-row gap-4">
+                    <Avatar className="hidden h-9 w-9 sm:flex">
+                      <AvatarImage src="/avatars/02.png" alt="Avatar" />
+                      <AvatarFallback>MH</AvatarFallback>
+                    </Avatar>
+                    <div className="grid gap-1">
+                      <p className="sm:text-md text-xs lg:text-lg xl:text-lg font-medium leading-none">
+                        Mark Hamil
+                      </p>
+                      <p className="sm:text-md text-xs lg:text-md xl:text-md text-muted-foreground">
+                        mark.hamil@email.com
+                      </p>
+                    </div>
+                    <div className="ml-auto sm:text-md text-xs lg:text-lg xl:text-lg font-medium text-emerald-500">
+                      +$189.89
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-row gap-4">
+                    <Avatar className="hidden h-9 w-9 sm:flex">
+                      <AvatarImage src="/avatars/02.png" alt="Avatar" />
+                      <AvatarFallback>JL</AvatarFallback>
+                    </Avatar>
+                    <div className="grid gap-1">
+                      <p className="sm:text-md text-xs lg:text-lg xl:text-lg font-medium leading-none">
+                        Jackson Lee
+                      </p>
+                      <p className="sm:text-md text-xs lg:text-md xl:text-md text-muted-foreground">
+                        jackson.lee@email.com
+                      </p>
+                    </div>
+                    <div className="ml-auto sm:text-md text-xs lg:text-lg xl:text-lg font-medium text-emerald-500">
+                      +$39.00
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
