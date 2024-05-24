@@ -31,7 +31,6 @@ import {
   PaginationContent,
   PaginationItem,
 } from "@/components/ui/pagination";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -50,7 +49,7 @@ import {
   Copy,
   CreditCard,
   Home,
-  LineChart,
+  LineChart as LucideLineChart,
   ListFilter,
   MoreVertical,
   Package,
@@ -61,6 +60,7 @@ import {
   Truck,
   Users2,
   CheckCheck,
+  Box,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { jwtDecode } from "jwt-decode";
@@ -276,7 +276,7 @@ export default function OrdersPage() {
                 href="#"
                 className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
               >
-                <LineChart className="h-5 w-5" />
+                <LucideLineChart className="h-5 w-5" />
                 Settings
               </a>
             </nav>
@@ -317,12 +317,12 @@ export default function OrdersPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Support</DropdownMenuItem>
+            <DropdownMenuItem>Impostazioni</DropdownMenuItem>
+            <DropdownMenuItem>Supporto</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>Esci</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </header>
@@ -335,54 +335,54 @@ export default function OrdersPage() {
         )}
       >
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-            <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 xl:grid-cols-4">
+            <Card className="" x-chunk="dashboard-05-chunk-0">
               <CardHeader className="pb-3">
-                <CardTitle>Your Orders</CardTitle>
+                <CardTitle>I tuoi ordini</CardTitle>
                 <CardDescription className="max-w-lg text-balance leading-relaxed">
-                  Introducing Our Dynamic Orders Dashboard for Seamless
-                  Management and Insightful Analysis.
+                  In questa pagina potrai controllare tutti gli ordini ricevuti
+                  analizzando anche dati statistici.
                 </CardDescription>
               </CardHeader>
               <CardFooter>
-                <Button>Create New Order</Button>
+                <Button>Crea manualmente un ordine</Button>
               </CardFooter>
             </Card>
-            <Card x-chunk="dashboard-05-chunk-1">
+            <Card x-chunk="dashboard-05-chunk-3">
               <CardHeader className="pb-2">
-                <CardDescription>This Week</CardDescription>
-                <CardTitle className="text-4xl">$1,329</CardTitle>
+                <CardDescription className="flex flex-row justify-between items-center text-primary font-medium">
+                  <span>Ordini totali</span>
+                  <Box className="w-5 h-5" />
+                </CardDescription>
+                <CardTitle className="text-4xl">5488</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-xs text-muted-foreground">
-                  +25% from last week
+                <div className="text-xs text-emerald-500">
+                  +38% dallo scorso anno
                 </div>
               </CardContent>
-              <CardFooter>
-                <Progress value={25} aria-label="25% increase" />
-              </CardFooter>
             </Card>
-            <Card x-chunk="dashboard-05-chunk-2">
+            <Card x-chunk="dashboard-05-chunk-3">
               <CardHeader className="pb-2">
-                <CardDescription>This Month</CardDescription>
-                <CardTitle className="text-4xl">$5,329</CardTitle>
+                <CardDescription className="flex flex-row justify-between items-center text-primary font-medium">
+                  <span>Ordini mensili</span>
+                  <Box className="w-5 h-5" />
+                </CardDescription>
+                <CardTitle className="text-4xl">138</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-xs text-muted-foreground">
-                  +10% from last month
+                <div className="text-xs text-emerald-500">
+                  +3% dallo scorso mese
                 </div>
               </CardContent>
-              <CardFooter>
-                <Progress value={12} aria-label="12% increase" />
-              </CardFooter>
             </Card>
           </div>
           <Tabs defaultValue="week">
             <div className="flex items-center">
               <TabsList>
-                <TabsTrigger value="week">Week</TabsTrigger>
-                <TabsTrigger value="month">Month</TabsTrigger>
-                <TabsTrigger value="year">Year</TabsTrigger>
+                <TabsTrigger value="week">Settimana</TabsTrigger>
+                <TabsTrigger value="month">Mese</TabsTrigger>
+                <TabsTrigger value="year">Anno</TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
                 <DropdownMenu>
@@ -393,11 +393,11 @@ export default function OrdersPage() {
                       className="h-7 gap-1 text-sm"
                     >
                       <ListFilter className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only">Filter</span>
+                      <span className="sr-only sm:not-sr-only">Filtra</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                    <DropdownMenuLabel>Filtra per</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuCheckboxItem
                       checked={filters.ricevuto}
@@ -473,7 +473,7 @@ export default function OrdersPage() {
                   className="h-7 gap-1 text-sm"
                 >
                   <File className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only">Export</span>
+                  <span className="sr-only sm:not-sr-only">Esporta in CSV</span>
                 </Button>
               </div>
             </div>
@@ -573,6 +573,7 @@ export default function OrdersPage() {
             </TabsContent>
           </Tabs>
         </div>
+        {/* ORDER DETAIL */}
         <div className={activeIndex !== null ? "flex-grow" : ""}>
           {activeIndex !== null ? (
             <Card className="overflow-hidden" x-chunk="dashboard-05-chunk-4">
