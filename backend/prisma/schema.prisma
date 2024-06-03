@@ -46,6 +46,7 @@ model Product {
   id            Int @id @default(autoincrement())
   product_name  String
   description   String
+  status        String @default("Tutti")
   price         Float
   stock         Int
   orders ProductOnOrder[]

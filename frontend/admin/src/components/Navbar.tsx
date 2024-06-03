@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   LineChart,
   Package,
@@ -16,6 +16,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import Cookies from "universal-cookie";
+import { IJWTPayloadExtension } from "@/models/models";
+import { jwtDecode } from "jwt-decode";
+
+const cookies = new Cookies(null, { path: "/" });
+
 const navbarItems = [
   { icon: ShoppingCart, text: "Orders", isActive: false },
   { icon: Package, text: "Products", isActive: false },
@@ -25,7 +31,50 @@ const navbarItems = [
 ];
 
 export default function Navbar() {
+  const navigate = useNavigate();
+  const user_email = cookies.get("user_email");
   const [activeIndex, setActiveIndex] = useState(null);
+
+  useEffect(() => {
+    // Verifico se l'utente puo ancora accedere alla risorsa
+    async function checkPermission() {
+      try {
+        const response = await fetch("http://localhost:3000/verifyJWT", {
+          method: "POST",
+          body: JSON.stringify({ email: user_email }),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        });
+        const data = await response.json();
+        console.log(data);
+
+        // Se non sei autorizzato
+        const status = response.status;
+        if (status == 401) {
+          navigate("/sign-in");
+        }
+
+        // Salvo l'access_token
+        cookies.set("access_token", data.accessToken);
+
+        const secretKey = await import.meta.env.VITE_JSONWEBTOKEN_SECRET_KEY;
+        const token: string = data.accessToken;
+        if (secretKey && token) {
+          const decoded: IJWTPayloadExtension = jwtDecode(token);
+          // Salvo nei cookies l'email dell'utente loggato
+          if (decoded && decoded.userToSignJWT && decoded.userToSignJWT.email) {
+            const email: string = decoded.userToSignJWT.email;
+            cookies.set("user_email", email);
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    checkPermission();
+  }, [navigate, user_email]);
 
   const handleItemClick = (index: number | React.SetStateAction<null>) => {
     setActiveIndex(index);

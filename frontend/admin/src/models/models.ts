@@ -7,6 +7,14 @@ export interface IJWTPayloadExtension extends JwtPayload {
   };
 }
 
+export interface SimpleProduct {
+  id: number;
+  product_name: string;
+  description: string;
+  price: number;
+  status: string;
+}
+
 export interface Product {
   order_id: number;
   product_id: number;

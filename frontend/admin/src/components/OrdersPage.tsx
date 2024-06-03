@@ -56,19 +56,16 @@ import {
   X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { jwtDecode } from "jwt-decode";
 import Cookies from "universal-cookie";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { IJWTPayloadExtension, Order, Product, User } from "@/models/models";
+import { Order, Product, User } from "@/models/models";
 
 const cookies = new Cookies(null, { path: "/" });
 
 export default function OrdersPage() {
-  const navigate = useNavigate();
-
   const [activeIndex, setActiveIndex] = useState<number | null>(null); // Indica quale riga della tabella e' attiva dopo averci cliccato
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [orders, setOrders] = useState<Order[] | []>([]);
@@ -82,8 +79,6 @@ export default function OrdersPage() {
     rimborsato: true,
     in_lavorazione: true,
   });
-
-  const user_email = cookies.get("user_email");
 
   // Viene attivato quando clicco sul pulsante per copiare l'id dell'ordine
   const handleClickCopy = async (orderId: string) => {
@@ -100,47 +95,12 @@ export default function OrdersPage() {
   };
 
   useEffect(() => {
-    // Verifico se l'utente puo ancora accedere alla risorsa
-    async function checkPermission() {
-      try {
-        const response = await fetch("http://localhost:3000/verifyJWT", {
-          method: "POST",
-          body: JSON.stringify({ email: user_email }),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
-        });
-        const data = await response.json();
-        console.log(data);
-
-        // Se non sei autorizzato
-        const status = response.status;
-        if (status == 401) {
-          navigate("/sign-in");
-        }
-
-        // Salvo l'access_token
-        cookies.set("access_token", data.accessToken);
-
-        const secretKey = await import.meta.env.VITE_JSONWEBTOKEN_SECRET_KEY;
-        const token: string = data.accessToken;
-        if (secretKey && token) {
-          const decoded: IJWTPayloadExtension = jwtDecode(token);
-          // Salvo nei cookies l'email dell'utente loggato
-          if (decoded && decoded.userToSignJWT && decoded.userToSignJWT.email) {
-            const email: string = decoded.userToSignJWT.email;
-            cookies.set("user_email", email);
-          }
-        }
-
-        setOrders(await getOrders());
-      } catch (error) {
-        console.log(error);
-      }
+    async function getOrdersFromDB() {
+      setOrders(await getOrders());
     }
 
-    checkPermission();
-  }, [navigate, user_email]);
+    getOrdersFromDB();
+  }, []);
 
   // Viene attivata quando clicco su un elemento della tabella degli ordini recenti
   const handleClick = async (index: number, order: Order) => {
