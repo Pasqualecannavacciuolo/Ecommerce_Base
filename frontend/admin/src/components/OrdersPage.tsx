@@ -61,6 +61,7 @@ import {
   Users2,
   CheckCheck,
   Box,
+  X,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { jwtDecode } from "jwt-decode";
@@ -577,7 +578,15 @@ export default function OrdersPage() {
         <div className={activeIndex !== null ? "flex-grow" : ""}>
           {activeIndex !== null ? (
             <Card className="overflow-hidden" x-chunk="dashboard-05-chunk-4">
-              <CardHeader className="flex flex-row items-start bg-muted/50">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="m-3"
+                onClick={() => setActiveIndex(null)}
+              >
+                <X className="h-6 w-6 text-rose-500" />
+              </Button>
+              <CardHeader className="flex flex-row items-start">
                 <div className="grid gap-0.5">
                   <CardTitle className="group flex items-center gap-2 text-lg">
                     {currentOrder?.id}
@@ -587,7 +596,7 @@ export default function OrdersPage() {
                       }
                       size="icon"
                       variant="outline"
-                      className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                      className="h-6 w-6"
                     >
                       {!isCopied ? (
                         <Copy className="h-3 w-3" />
