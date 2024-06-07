@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../prisma";
-import { Product } from "../models/Product";
+import { Product } from "@prisma/client";
 
 /**
  * Funzione che ottiene tutti i prodotti dal database
@@ -34,6 +34,7 @@ export async function add_product(req: Request, res: Response) {
         description: product.description,
         price: product.price,
         stock: product.stock,
+        image: product.image,
       },
     });
     res.status(201).json({ messagge: "Prodotto creato con successo" });

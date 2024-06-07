@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,60 +8,42 @@ datasource db {
 }
 
 model User {
-  id            Int @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   name          String
-  email         String @unique
+  email         String  @unique
   password      String
   access_token  String?
   refresh_token String?
   orders        Order[]
 }
 
-//model Product {
-//  id Int @id @default(autoincrement())
-//  product_name String
-//  description String
-//  price Float
-//  stock Int
-//  order Order? @relation(fields: [order_id], references: [id])
-//  order_id Int?
-//}
-
-//model Order {
-//  id Int @id @default(autoincrement())
-//  user User @relation(fields: [user_id], references: [id])
-//  user_id Int
-//  quantity Int
-//  status String
-//  products Product[]
-//}
-
 model Product {
-  id            Int @id @default(autoincrement())
-  product_name  String
-  description   String
-  status        String @default("Tutti")
-  price         Float
-  stock         Int
-  orders ProductOnOrder[]
+  id           Int              @id @default(autoincrement())
+  product_name String
+  description  String
+  status       String           @default("Tutti")
+  price        Float
+  stock        Int
+  image        String           @default("")
+  orders       ProductOnOrder[]
 }
 
 model Order {
-  id            Int @id @default(autoincrement())
-  user          User @relation(fields: [user_id], references: [id])
-  user_id       Int
-  status        String
-  products      ProductOnOrder[]
-  total         Float @default(0)
-  createdAt     DateTime   @default(now())
+  id        Int              @id @default(autoincrement())
+  user_id   Int
+  status    String
+  total     Float            @default(0)
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [user_id], references: [id])
+  products  ProductOnOrder[]
 }
 
 model ProductOnOrder {
-  order         Order @relation(fields: [order_id], references: [id])
-  order_id      Int
-  product       Product @relation(fields: [product_id], references: [id])
-  product_id    Int
-  quantity      Int
+  order_id   Int
+  product_id Int
+  quantity   Int
+  order      Order   @relation(fields: [order_id], references: [id])
+  product    Product @relation(fields: [product_id], references: [id])
 
   @@id([order_id, product_id])
 }
