@@ -275,7 +275,7 @@ export default function ProductsPage() {
                               src={`/public/${product.id}.jpg`}
                               width="64"
                               height="64"
-                              className="aspect-square rounded-md object-cover"
+                              className="aspect-square rounded-md object-contain"
                               alt={product.product_name}
                             />
                           </TableCell>
