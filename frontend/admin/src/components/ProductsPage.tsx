@@ -272,11 +272,11 @@ export default function ProductsPage() {
                         >
                           <TableCell className="hidden sm:table-cell">
                             <img
-                              alt="Product image"
-                              className="aspect-square rounded-md object-cover"
-                              height="64"
-                              src="/placeholder.svg"
+                              src={product.image}
                               width="64"
+                              height="64"
+                              className="aspect-square rounded-md object-cover"
+                              alt="Product image"
                             />
                           </TableCell>
                           <TableCell>
