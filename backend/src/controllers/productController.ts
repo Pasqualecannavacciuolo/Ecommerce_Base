@@ -34,7 +34,6 @@ export async function add_product(req: Request, res: Response) {
         description: product.description,
         price: product.price,
         stock: product.stock,
-        image: product.image,
       },
     });
     res.status(201).json({ messagge: "Prodotto creato con successo" });

@@ -272,11 +272,11 @@ export default function ProductsPage() {
                         >
                           <TableCell className="hidden sm:table-cell">
                             <img
-                              src={product.image}
+                              src={`/public/${product.id}.jpg`}
                               width="64"
                               height="64"
                               className="aspect-square rounded-md object-cover"
-                              alt="Product image"
+                              alt={product.product_name}
                             />
                           </TableCell>
                           <TableCell>

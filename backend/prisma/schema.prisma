@@ -24,7 +24,6 @@ model Product {
   status       String           @default("Tutti")
   price        Float
   stock        Int
-  image        String           @default("")
   orders       ProductOnOrder[]
 }
 
