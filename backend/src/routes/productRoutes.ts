@@ -5,6 +5,7 @@ import {
   get_all_products_archiviati,
   get_all_products_attivi,
   get_all_products_bozze,
+  get_product_by_id,
 } from "../controllers/productController";
 import { authenticate } from "../lib/middleware";
 const ProductRouter = express.Router();
@@ -17,6 +18,7 @@ ProductRouter.get(
   authenticate,
   get_all_products_archiviati
 );
+ProductRouter.get("/product/get/:id", authenticate, get_product_by_id);
 ProductRouter.post("/product/add", add_product);
 
 export default ProductRouter;

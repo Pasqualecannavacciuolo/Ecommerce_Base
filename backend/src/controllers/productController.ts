@@ -19,6 +19,36 @@ export async function get_all_products(req: Request, res: Response) {
 }
 
 /**
+ * Funzione che ottiene il prodotto tramite l'ID dal database
+ * @param req
+ * @param res
+ * @returns
+ */
+export async function get_product_by_id(req: Request, res: Response) {
+  try {
+    const id = parseInt(req.params.id);
+    const product = await prisma.product.findUnique({
+      where: {
+        id: id,
+      },
+      select: {
+        id: true,
+        product_name: true,
+        description: true,
+        status: true,
+        price: true,
+        stock: true,
+        variants: true,
+      },
+    });
+    res.status(200).json(product);
+  } catch (error) {
+    console.error("Errore durante il fetch dei dati:", error);
+    return res.status(500).send("Errore durante il fetch dei dati");
+  }
+}
+
+/**
  * Funzione che ottiene tutti i prodotti attivi dal database
  * @param req
  * @param res
