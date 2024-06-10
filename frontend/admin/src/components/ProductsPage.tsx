@@ -41,16 +41,16 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { SimpleProduct } from "@/models/models";
+import { useNavigate } from "react-router-dom";
 
 const cookies = new Cookies(null, { path: "/" });
 
 const access_token = cookies.get("access_token");
 
 export default function ProductsPage() {
+  const navigate = useNavigate();
+
   const [activeIndex, setActiveIndex] = useState<number | null>(null); // Indica quale riga della tabella e' attiva dopo averci cliccato
-  const [currentProduct, setCurrentProduct] = useState<SimpleProduct | null>(
-    null
-  );
   const [productsAttivi, setProductsAttivi] = useState<SimpleProduct[] | []>(
     []
   );
@@ -68,9 +68,9 @@ export default function ProductsPage() {
   }, []);
 
   // Viene attivata quando clicco su un elemento della tabella degli ordini recenti
-  const handleClick = async (index: number, product: SimpleProduct) => {
+  const handleClick = async (index: number, id: number) => {
     setActiveIndex(index);
-    setCurrentProduct(product);
+    navigate(`/products/${id}`);
   };
 
   // Viene attivato quando clicco sulla voce per effettuare il logout
@@ -396,7 +396,7 @@ export default function ProductsPage() {
                       {productsAttivi.map((product, index) => (
                         <TableRow
                           key={index}
-                          onClick={() => handleClick(index, product)}
+                          onClick={() => handleClick(index, product.id)}
                           className={cn("cursor-pointer", {
                             "bg-accent": activeIndex === index,
                           })}

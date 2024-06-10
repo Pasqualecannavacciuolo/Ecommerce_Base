@@ -13,6 +13,7 @@ export interface SimpleProduct {
   description: string;
   price: number;
   status: string;
+  variants: any;
 }
 
 export interface Product {

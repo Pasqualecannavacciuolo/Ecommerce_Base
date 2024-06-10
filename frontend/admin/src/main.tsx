@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster";
 import SignInPage from "./components/SignInPage.tsx";
 import OrdersPage from "./components/OrdersPage.tsx";
 import ProductsPage from "./components/ProductsPage.tsx";
+import ProductsDetails from "./components/ProductDetails.tsx";
 
 const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
       {
         path: "/products",
         element: <ProductsPage />,
+      },
+      {
+        path: "/products/:id",
+        element: <ProductsDetails />,
       },
     ],
   },
