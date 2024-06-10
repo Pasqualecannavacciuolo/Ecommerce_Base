@@ -21,9 +21,10 @@ model Product {
   id           Int              @id @default(autoincrement())
   product_name String
   description  String
-  status       String           @default("Tutti")
+  status       String           @default("Attivo")
   price        Float
   stock        Int
+  variants     Json?
   orders       ProductOnOrder[]
 }
 
