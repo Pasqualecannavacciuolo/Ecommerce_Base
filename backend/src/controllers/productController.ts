@@ -19,6 +19,66 @@ export async function get_all_products(req: Request, res: Response) {
 }
 
 /**
+ * Funzione che ottiene tutti i prodotti attivi dal database
+ * @param req
+ * @param res
+ * @returns
+ */
+export async function get_all_products_attivi(req: Request, res: Response) {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: "Attivo",
+      },
+    });
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Errore durante il fetch dei dati:", error);
+    return res.status(500).send("Errore durante il fetch dei dati");
+  }
+}
+
+/**
+ * Funzione che ottiene tutti i prodotti in stato di bozza dal database
+ * @param req
+ * @param res
+ * @returns
+ */
+export async function get_all_products_bozze(req: Request, res: Response) {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: "Bozza",
+      },
+    });
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Errore durante il fetch dei dati:", error);
+    return res.status(500).send("Errore durante il fetch dei dati");
+  }
+}
+
+/**
+ * Funzione che ottiene tutti i prodotti archiviati dal database
+ * @param req
+ * @param res
+ * @returns
+ */
+export async function get_all_products_archiviati(req: Request, res: Response) {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        status: "Archiviato",
+      },
+    });
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Errore durante il fetch dei dati:", error);
+    return res.status(500).send("Errore durante il fetch dei dati");
+  }
+}
+
+/**
  * Funzione che aggiunge un prodotto al Database
  * @param req
  * @param res
