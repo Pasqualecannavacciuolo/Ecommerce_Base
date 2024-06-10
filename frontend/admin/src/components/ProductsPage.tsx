@@ -51,14 +51,20 @@ export default function ProductsPage() {
   const [currentProduct, setCurrentProduct] = useState<SimpleProduct | null>(
     null
   );
-  const [products, setProducts] = useState<SimpleProduct[] | []>([]);
+  const [productsAttivi, setProductsAttivi] = useState<SimpleProduct[] | []>(
+    []
+  );
+  const [productsBozze, setProductsBozze] = useState<SimpleProduct[] | []>([]);
+  const [productsArchiviati, setProductsArchiviati] = useState<
+    SimpleProduct[] | []
+  >([]);
+  const [productsTutti, setProductsTutti] = useState<SimpleProduct[] | []>([]);
 
   useEffect(() => {
-    async function getProductsFromDB() {
-      setProducts(await getProducts());
+    async function getProductsAttiviFromDB() {
+      setProductsAttivi(await getProductsAttivi());
     }
-
-    getProductsFromDB();
+    getProductsAttiviFromDB();
   }, []);
 
   // Viene attivata quando clicco su un elemento della tabella degli ordini recenti
@@ -95,8 +101,89 @@ export default function ProductsPage() {
     }
   }
 
-  // Funzione che ottiene tutti gli ordini dal Database
-  async function getProducts() {
+  // Funzione che ottiene tutti gli i prodotti attivi dal Database
+  async function getProductsAttivi() {
+    try {
+      const response = await fetch("http://localhost:3000/product/get/attivi", {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+          Authorization: access_token,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Errore durante il fetch dei prodotti");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log(error);
+      // Gestisci il caso in cui l'access_token sia scaduto
+      if (error.message.includes("401")) {
+        // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
+      }
+    }
+  }
+
+  // Funzione che ottiene tutti gli i prodotti in stato di bozza dal Database
+  async function getProductsBozze() {
+    try {
+      const response = await fetch("http://localhost:3000/product/get/bozze", {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+          Authorization: access_token,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Errore durante il fetch dei prodotti");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log(error);
+      // Gestisci il caso in cui l'access_token sia scaduto
+      if (error.message.includes("401")) {
+        // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
+      }
+    }
+  }
+
+  // Funzione che ottiene tutti gli i prodotti archiviati dal Database
+  async function getProductsArchiviati() {
+    try {
+      const response = await fetch(
+        "http://localhost:3000/product/get/archiviati",
+        {
+          method: "GET",
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+            Authorization: access_token,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Errore durante il fetch dei prodotti");
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log(error);
+      // Gestisci il caso in cui l'access_token sia scaduto
+      if (error.message.includes("401")) {
+        // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
+      }
+    }
+  }
+
+  // Funzione che ottiene tutti i prodotti dal Database
+  async function getProductsTutti() {
     try {
       const response = await fetch("http://localhost:3000/product/get", {
         method: "GET",
@@ -119,6 +206,16 @@ export default function ProductsPage() {
         // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
       }
     }
+  }
+
+  async function setterProductsTutti() {
+    setProductsTutti(await getProductsTutti());
+  }
+  async function setterProductsBozze() {
+    setProductsBozze(await getProductsBozze());
+  }
+  async function setterProductsArchiviati() {
+    setProductsArchiviati(await getProductsArchiviati());
   }
 
   return (
@@ -213,13 +310,46 @@ export default function ProductsPage() {
               </CardContent>
             </Card>
           </div>
-          <Tabs defaultValue="Tutti">
+          <Tabs defaultValue="Attivi">
             <div className="flex items-center">
               <TabsList>
-                <TabsTrigger value="Tutti">Tutti</TabsTrigger>
                 <TabsTrigger value="Attivi">Attivi</TabsTrigger>
-                <TabsTrigger value="Bozze">Bozze</TabsTrigger>
-                <TabsTrigger value="Archiviati">Archiviati</TabsTrigger>
+                <TabsTrigger
+                  value="Archiviati"
+                  onClick={() => {
+                    if (productsTutti.length == 0) {
+                      setterProductsArchiviati();
+                    } else {
+                      return;
+                    }
+                  }}
+                >
+                  Archiviati
+                </TabsTrigger>
+                <TabsTrigger
+                  value="Bozze"
+                  onClick={() => {
+                    if (productsTutti.length == 0) {
+                      setterProductsBozze();
+                    } else {
+                      return;
+                    }
+                  }}
+                >
+                  Bozze
+                </TabsTrigger>
+                <TabsTrigger
+                  value="Tutti"
+                  onClick={() => {
+                    if (productsTutti.length == 0) {
+                      setterProductsTutti();
+                    } else {
+                      return;
+                    }
+                  }}
+                >
+                  Tutti
+                </TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
                 <Button
@@ -238,11 +368,12 @@ export default function ProductsPage() {
                 </Button>
               </div>
             </div>
-            <TabsContent value="Tutti">
+            {/* TAB PRODOTTI ATTIVI */}
+            <TabsContent value="Attivi">
               <Card x-chunk="dashboard-05-chunk-3">
                 <CardHeader className="px-7">
                   <CardTitle>Prodotti</CardTitle>
-                  <CardDescription>Tutti i tuoi prodotti</CardDescription>
+                  <CardDescription>Tutti i prodotti attivi</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
@@ -262,7 +393,7 @@ export default function ProductsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {products.map((product, index) => (
+                      {productsAttivi.map((product, index) => (
                         <TableRow
                           key={index}
                           onClick={() => handleClick(index, product)}
@@ -290,10 +421,294 @@ export default function ProductsPage() {
                           <TableCell className="hidden sm:table-cell">
                             <Badge
                               className={cn("text-xs", {
-                                "bg-slate-300": product.status === "Tutti",
-                                "bg-amber-300": product.status === "Bozze",
-                                "bg-emerald-300": product.status === "Attivi",
-                                "bg-blue-300": product.status === "Archiviati",
+                                "bg-slate-300":
+                                  product.status !== "Bozza" &&
+                                  product.status !== "Attivo" &&
+                                  product.status !== "Archiviato",
+                                "bg-amber-300": product.status === "Bozza",
+                                "bg-emerald-300": product.status === "Attivo",
+                                "bg-blue-300": product.status === "Archiviato",
+                              })}
+                              variant="secondary"
+                            >
+                              {product.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="">${product.price}</TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  aria-haspopup="true"
+                                  size="icon"
+                                  variant="ghost"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Apri menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Azioni</DropdownMenuLabel>
+                                <DropdownMenuItem>Modifica</DropdownMenuItem>
+                                <DropdownMenuItem>Cancella</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            {/* TAB PRODOTTI BOZZE */}
+            <TabsContent value="Bozze">
+              <Card x-chunk="dashboard-05-chunk-3">
+                <CardHeader className="px-7">
+                  <CardTitle>Prodotti</CardTitle>
+                  <CardDescription>
+                    Tutti i prodotti in stato di bozza
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Immagine</TableHead>
+                        <TableHead>ID Prodotto</TableHead>
+                        <TableHead className="hidden sm:table-cell">
+                          Nome
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Descrizione
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Prezzo
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {productsBozze.map((product, index) => (
+                        <TableRow
+                          key={index}
+                          onClick={() => handleClick(index, product)}
+                          className={cn("cursor-pointer", {
+                            "bg-accent": activeIndex === index,
+                          })}
+                        >
+                          <TableCell className="hidden sm:table-cell">
+                            <img
+                              src={`/${product.id}.jpg`}
+                              width="64"
+                              height="64"
+                              className="aspect-square rounded-md object-contain"
+                              alt={product.product_name}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{product.id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">
+                              {product.product_name}
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell">
+                            <Badge
+                              className={cn("text-xs", {
+                                "bg-slate-300":
+                                  product.status !== "Bozza" &&
+                                  product.status !== "Attivo" &&
+                                  product.status !== "Archiviato",
+                                "bg-amber-300": product.status === "Bozza",
+                                "bg-emerald-300": product.status === "Attivo",
+                                "bg-blue-300": product.status === "Archiviato",
+                              })}
+                              variant="secondary"
+                            >
+                              {product.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="">${product.price}</TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  aria-haspopup="true"
+                                  size="icon"
+                                  variant="ghost"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Apri menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Azioni</DropdownMenuLabel>
+                                <DropdownMenuItem>Modifica</DropdownMenuItem>
+                                <DropdownMenuItem>Cancella</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            {/* TAB PRODOTTI ARCHIVIATI */}
+            <TabsContent value="Archiviati">
+              <Card x-chunk="dashboard-05-chunk-3">
+                <CardHeader className="px-7">
+                  <CardTitle>Prodotti</CardTitle>
+                  <CardDescription>Tutti i prodotti archiviati</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Immagine</TableHead>
+                        <TableHead>ID Prodotto</TableHead>
+                        <TableHead className="hidden sm:table-cell">
+                          Nome
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Descrizione
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Prezzo
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {productsArchiviati.map((product, index) => (
+                        <TableRow
+                          key={index}
+                          onClick={() => handleClick(index, product)}
+                          className={cn("cursor-pointer", {
+                            "bg-accent": activeIndex === index,
+                          })}
+                        >
+                          <TableCell className="hidden sm:table-cell">
+                            <img
+                              src={`/${product.id}.jpg`}
+                              width="64"
+                              height="64"
+                              className="aspect-square rounded-md object-contain"
+                              alt={product.product_name}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{product.id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">
+                              {product.product_name}
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell">
+                            <Badge
+                              className={cn("text-xs", {
+                                "bg-slate-300":
+                                  product.status !== "Bozza" &&
+                                  product.status !== "Attivo" &&
+                                  product.status !== "Archiviato",
+                                "bg-amber-300": product.status === "Bozza",
+                                "bg-emerald-300": product.status === "Attivo",
+                                "bg-blue-300": product.status === "Archiviato",
+                              })}
+                              variant="secondary"
+                            >
+                              {product.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="">${product.price}</TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  aria-haspopup="true"
+                                  size="icon"
+                                  variant="ghost"
+                                >
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Apri menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Azioni</DropdownMenuLabel>
+                                <DropdownMenuItem>Modifica</DropdownMenuItem>
+                                <DropdownMenuItem>Cancella</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            {/* TAB TUTTI I PRODOTTI */}
+            <TabsContent value="Tutti">
+              <Card x-chunk="dashboard-05-chunk-3">
+                <CardHeader className="px-7">
+                  <CardTitle>Prodotti</CardTitle>
+                  <CardDescription>Tutti i tuoi prodotti</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Immagine</TableHead>
+                        <TableHead>ID Prodotto</TableHead>
+                        <TableHead className="hidden sm:table-cell">
+                          Nome
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Descrizione
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Prezzo
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {productsTutti.map((product, index) => (
+                        <TableRow
+                          key={index}
+                          onClick={() => handleClick(index, product)}
+                          className={cn("cursor-pointer", {
+                            "bg-accent": activeIndex === index,
+                          })}
+                        >
+                          <TableCell className="hidden sm:table-cell">
+                            <img
+                              src={`/${product.id}.jpg`}
+                              width="64"
+                              height="64"
+                              className="aspect-square rounded-md object-contain"
+                              alt={product.product_name}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{product.id}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">
+                              {product.product_name}
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell">
+                            <Badge
+                              className={cn("text-xs", {
+                                "bg-slate-300":
+                                  product.status !== "Bozza" &&
+                                  product.status !== "Attivo" &&
+                                  product.status !== "Archiviato",
+                                "bg-amber-300": product.status === "Bozza",
+                                "bg-emerald-300": product.status === "Attivo",
+                                "bg-blue-300": product.status === "Archiviato",
                               })}
                               variant="secondary"
                             >
