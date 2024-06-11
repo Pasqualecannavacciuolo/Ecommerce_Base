@@ -30,6 +30,16 @@ model Product {
   orders       ProductOnOrder[]
 }
 
+model Category {
+  id           Int              @id @default(autoincrement())
+  name         String
+}
+
+model SubCategory {
+  id           Int              @id @default(autoincrement())
+  name         String
+}
+
 model Order {
   id        Int              @id @default(autoincrement())
   user_id   Int

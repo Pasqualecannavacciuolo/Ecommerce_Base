@@ -5,11 +5,14 @@ import cookieParser from "cookie-parser";
 import prisma from "./prisma";
 import { User } from "./models/User";
 
+import { authenticate } from "./lib/middleware";
+
 import AuthRouter from "./routes/authRoutes";
 import ProductRouter from "./routes/productRoutes";
 import OrderRouter from "./routes/orderRoutes";
-import { authenticate } from "./lib/middleware";
 import UserRouter from "./routes/userRoutes";
+import CategoryRouter from "./routes/categoryRoutes";
+import SubCategoryRouter from "./routes/subCategoryRoutes";
 
 export const secretKey = process.env.JSONWEBTOKEN_SECRET_KEY!;
 
@@ -30,6 +33,8 @@ app.use(AuthRouter);
 app.use(ProductRouter);
 app.use(OrderRouter);
 app.use(UserRouter);
+app.use(CategoryRouter);
+app.use(SubCategoryRouter);
 
 app.get("/", async (req, res) => {
   const users: User[] = await prisma.user.findMany();
