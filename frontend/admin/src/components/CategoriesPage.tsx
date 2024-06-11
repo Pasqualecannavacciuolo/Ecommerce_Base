@@ -39,8 +39,12 @@ import Cookies from "universal-cookie";
 import { useEffect, useState } from "react";
 import { Category } from "@/models/models";
 
-const FormSchema = z.object({
+const CategoriesFormSchema = z.object({
   categories: z.array(z.number()).default([]),
+});
+
+const SubCategoriesFormSchema = z.object({
+  subCategories: z.array(z.number()).default([]),
 });
 
 const cookies = new Cookies(null, { path: "/" });
@@ -81,14 +85,34 @@ export default function CategoriesPage() {
     }
   }
 
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const categories_form = useForm<z.infer<typeof CategoriesFormSchema>>({
+    resolver: zodResolver(CategoriesFormSchema),
     defaultValues: {
       categories: [],
     },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  const sub_categories_form = useForm<z.infer<typeof SubCategoriesFormSchema>>({
+    resolver: zodResolver(SubCategoriesFormSchema),
+    defaultValues: {
+      subCategories: [],
+    },
+  });
+
+  function onSubmitCategories(data: z.infer<typeof CategoriesFormSchema>) {
+    toast({
+      title: "You submitted the following values:",
+      description: (
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+        </pre>
+      ),
+    });
+  }
+
+  function onSubmitSubCategories(
+    data: z.infer<typeof SubCategoriesFormSchema>
+  ) {
     toast({
       title: "You submitted the following values:",
       description: (
@@ -210,13 +234,13 @@ export default function CategoriesPage() {
         <div className="mx-auto grid max-w-[59rem] flex-1 auto-rows-max gap-4">
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
-              <Form {...form}>
+              <Form {...categories_form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  onSubmit={categories_form.handleSubmit(onSubmitCategories)}
                   className="space-y-8"
                 >
                   <FormField
-                    control={form.control}
+                    control={categories_form.control}
                     name="categories"
                     render={({ field }) => (
                       <FormItem>
@@ -258,15 +282,17 @@ export default function CategoriesPage() {
               </Form>
             </div>
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-1 lg:gap-8">
-              <Form {...form}>
+              <Form {...sub_categories_form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  onSubmit={sub_categories_form.handleSubmit(
+                    onSubmitSubCategories
+                  )}
                   className="space-y-8"
                 >
                   <FormField
-                    control={form.control}
-                    name="items"
-                    render={() => (
+                    control={sub_categories_form.control}
+                    name="subCategories"
+                    render={({ field }) => (
                       <FormItem>
                         <div className="mb-4">
                           <FormLabel className="text-base">
@@ -277,50 +303,33 @@ export default function CategoriesPage() {
                           </FormDescription>
                         </div>
                         {subCategories.map((sub_category) => (
-                          <FormField
+                          <FormItem
                             key={sub_category.id}
-                            control={form.control}
-                            name="items"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={sub_category.id}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(
-                                        sub_category.id.toString()
-                                      )}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([
-                                              ...field.value,
-                                              sub_category.id,
-                                            ])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (value) =>
-                                                  value !==
-                                                  sub_category.id.toString()
-                                              )
-                                            );
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="text-sm font-normal">
-                                    {sub_category.name}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
+                            className="flex flex-row items-start space-x-3 space-y-0"
+                          >
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value.includes(sub_category.id)}
+                                onCheckedChange={(checked) => {
+                                  const newValue = checked
+                                    ? [...field.value, sub_category.id]
+                                    : field.value.filter(
+                                        (value) => value !== sub_category.id
+                                      );
+                                  field.onChange(newValue);
+                                }}
+                              />
+                            </FormControl>
+                            <FormLabel className="text-sm font-normal">
+                              {sub_category.name}
+                            </FormLabel>
+                          </FormItem>
                         ))}
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <Button type="submit">Submit</Button>
+                  <Button type="submit">Salva</Button>
                 </form>
               </Form>
             </div>
