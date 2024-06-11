@@ -18,6 +18,11 @@ export interface SimpleProduct {
   sub_category: string;
 }
 
+export interface Category {
+  id: number;
+  name: string;
+}
+
 export interface Product {
   order_id: number;
   product_id: number;
