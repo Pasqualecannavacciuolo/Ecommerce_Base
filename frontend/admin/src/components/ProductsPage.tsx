@@ -70,7 +70,7 @@ export default function ProductsPage() {
   // Viene attivata quando clicco su un elemento della tabella degli ordini recenti
   const handleClick = async (index: number, id: number) => {
     setActiveIndex(index);
-    navigate(`/products/${id}`);
+    navigate(`/prodotti/${id}`);
   };
 
   // Viene attivato quando clicco sulla voce per effettuare il logout

@@ -131,7 +131,7 @@ export default function ProductsDetails() {
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/products">Prodotti</Link>
+                <Link to="/prodotti">Prodotti</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
