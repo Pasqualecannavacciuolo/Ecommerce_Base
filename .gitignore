@@ -2,6 +2,6 @@
 /backend/.env
 /frontend/admin/node_modules
 /frontend/admin/.env
-pgdata
+pgdata*
 comandi.txt
 mocked_assets
