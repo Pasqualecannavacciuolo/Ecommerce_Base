@@ -39,6 +39,8 @@ export async function get_product_by_id(req: Request, res: Response) {
         price: true,
         stock: true,
         variants: true,
+        category: true,
+        sub_category: true,
       },
     });
     res.status(200).json(product);

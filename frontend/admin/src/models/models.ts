@@ -14,6 +14,8 @@ export interface SimpleProduct {
   price: number;
   status: string;
   variants: any;
+  category: string;
+  sub_category: string;
 }
 
 export interface Product {

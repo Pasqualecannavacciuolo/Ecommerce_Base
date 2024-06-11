@@ -22,6 +22,8 @@ model Product {
   product_name String
   description  String
   status       String           @default("Attivo")
+  category     String           @default("")
+  sub_category String           @default("")
   price        Float
   stock        Int
   variants     Json?

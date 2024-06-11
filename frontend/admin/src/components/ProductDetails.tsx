@@ -359,9 +359,9 @@ export default function ProductsDetails() {
                       <Select>
                         <SelectTrigger
                           id="category"
-                          aria-label="Seleziona una categoria"
+                          aria-label={product?.category}
                         >
-                          <SelectValue placeholder="Seleziona una categoria" />
+                          <SelectValue placeholder={product?.category} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="accessori">Accessori</SelectItem>
@@ -379,9 +379,9 @@ export default function ProductsDetails() {
                       <Select>
                         <SelectTrigger
                           id="subcategory"
-                          aria-label="Select subcategory"
+                          aria-label={product?.sub_category}
                         >
-                          <SelectValue placeholder="Select subcategory" />
+                          <SelectValue placeholder={product?.sub_category} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="t-shirts">T-Shirts</SelectItem>
