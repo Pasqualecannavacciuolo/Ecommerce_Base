@@ -7,6 +7,7 @@ import {
   Package2,
   Settings,
   ShoppingCart,
+  SwatchBook,
   Users2,
 } from "lucide-react";
 import {
@@ -23,11 +24,12 @@ import { jwtDecode } from "jwt-decode";
 const cookies = new Cookies(null, { path: "/" });
 
 const navbarItems = [
-  { icon: ShoppingCart, text: "Orders", isActive: false },
-  { icon: Package, text: "Products", isActive: false },
-  { icon: Users2, text: "Customers", isActive: false },
-  { icon: LineChart, text: "Analytics", isActive: false },
-  { icon: Settings, text: "Settings", isActive: false },
+  { icon: ShoppingCart, text: "Ordini", isActive: false },
+  { icon: Package, text: "Prodotti", isActive: false },
+  { icon: SwatchBook, text: "Categorie", isActive: false },
+  { icon: Users2, text: "Utenti", isActive: false },
+  { icon: LineChart, text: "Statistiche", isActive: false },
+  { icon: Settings, text: "Impostazioni", isActive: false },
 ];
 
 export default function Navbar() {
