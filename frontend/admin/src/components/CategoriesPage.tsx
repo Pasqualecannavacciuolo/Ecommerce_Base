@@ -60,6 +60,11 @@ const CreateCategorySchema = z.object({
   activeStatus: z.boolean(),
 });
 
+const CreateSubCategorySchema = z.object({
+  name: z.string(),
+  activeStatus: z.boolean(),
+});
+
 const CategoriesFormSchema = z.object({
   categories: z.array(
     z.object({
@@ -167,6 +172,16 @@ export default function CategoriesPage() {
     },
   });
 
+  const create_subCategory_form = useForm<
+    z.infer<typeof CreateSubCategorySchema>
+  >({
+    resolver: zodResolver(CreateSubCategorySchema),
+    defaultValues: {
+      name: "",
+      activeStatus: false,
+    },
+  });
+
   const categories_form = useForm<z.infer<typeof CategoriesFormSchema>>({
     resolver: zodResolver(CategoriesFormSchema),
     defaultValues: {
@@ -222,6 +237,50 @@ export default function CategoriesPage() {
           a.name.localeCompare(b.name)
       );
       setCategories(sortedCategories);
+    } catch (error) {
+      console.log(error);
+      // Gestisci il caso in cui l'access_token sia scaduto
+      if (error instanceof Error && error.message.includes("401")) {
+        // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
+      }
+    }
+  }
+
+  async function onSubmitCreateSubCategory(
+    data: z.infer<typeof CreateSubCategorySchema>
+  ) {
+    console.log(data);
+    try {
+      // Itera sulle categorie per inviare una richiesta per ciascuna
+      const response = await fetch(`http://localhost:3000/sub_category/add`, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+          Authorization: access_token,
+        },
+        body: JSON.stringify({
+          name: data.name,
+          activeStatus: data.activeStatus,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Errore durante la creazione della sottocategoria!");
+      }
+
+      const responseData = await response.json();
+      toast({
+        title: "Messaggio",
+        description: <p>{responseData.message}</p>,
+      });
+
+      // Una volta creata una categoria ottengo nuovamente la lista delle sottocategorie create nel database
+      const fetchedSubCategories = await getSubCategories();
+      const sortedSubCategories = fetchedSubCategories.sort(
+        (a: { name: string }, b: { name: string }) =>
+          a.name.localeCompare(b.name)
+      );
+      setSubCategories(sortedSubCategories);
     } catch (error) {
       console.log(error);
       // Gestisci il caso in cui l'access_token sia scaduto
@@ -406,89 +465,173 @@ export default function CategoriesPage() {
       </header>
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
         <div className="mx-auto grid max-w-[59rem] flex-1 auto-rows-max gap-4">
-          <Card className="" x-chunk="dashboard-05-chunk-0">
-            <CardHeader className="pb-3">
-              <CardTitle>Le tue categorie</CardTitle>
-              <CardDescription className="max-w-lg text-balance leading-relaxed">
-                In questa pagina potrai controllare tutte le categorie e
-                sottocategoria del tuo sito, potrai renderle attive o
-                disattivarle, inoltre potrai anche crearne di nuove.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button>Crea una categoria</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Crea una categoria</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <Form {...create_category_form}>
-                      <form
-                        onSubmit={create_category_form.handleSubmit(
-                          onSubmitCreateCategory
-                        )}
-                        className="space-y-4"
-                      >
-                        <div>
-                          <label
-                            htmlFor="name"
-                            className="block text-sm font-medium text-gray-700"
-                          >
-                            Nome
-                          </label>
-                          <input
-                            {...create_category_form.register("name")}
-                            id="name"
-                            type="text"
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none sm:text-sm"
-                          />
-                          {create_category_form.formState.errors.name && (
-                            <span className="text-red-500">
-                              {
-                                create_category_form.formState.errors.name
-                                  .message
-                              }
-                            </span>
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* CREA CATEGORIA */}
+            <Card className="flex-1" x-chunk="dashboard-05-chunk-0">
+              <CardHeader className="pb-3">
+                <CardTitle>Le tue categorie</CardTitle>
+                <CardDescription className="max-w-lg text-balance leading-relaxed">
+                  Qui potrai controllare tutte le categorie del tuo sito, potrai
+                  renderle attive o disattivarle, inoltre potrai anche crearne
+                  di nuove.
+                </CardDescription>
+              </CardHeader>
+              <CardFooter>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>Crea una categoria</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Crea una categoria</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <Form {...create_category_form}>
+                        <form
+                          onSubmit={create_category_form.handleSubmit(
+                            onSubmitCreateCategory
                           )}
-                        </div>
-
-                        <div className="flex items-center">
-                          <FormField
-                            control={create_category_form.control}
-                            name="activeStatus"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <div className="space-y-1 leading-none">
-                                  <FormLabel>Attiva</FormLabel>
-                                </div>
-                              </FormItem>
+                          className="space-y-4"
+                        >
+                          <div>
+                            <label
+                              htmlFor="name"
+                              className="block text-sm font-medium text-gray-700"
+                            >
+                              Nome
+                            </label>
+                            <input
+                              {...create_category_form.register("name")}
+                              id="name"
+                              type="text"
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none sm:text-sm"
+                            />
+                            {create_category_form.formState.errors.name && (
+                              <span className="text-red-500">
+                                {
+                                  create_category_form.formState.errors.name
+                                    .message
+                                }
+                              </span>
                             )}
-                          />
-                        </div>
-                        <DialogFooter>
-                          <DialogClose>
-                            <Button type="submit">Crea</Button>
-                          </DialogClose>
-                        </DialogFooter>
-                      </form>
-                    </Form>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </CardFooter>
-          </Card>
-          <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
+                          </div>
+
+                          <div className="flex items-center">
+                            <FormField
+                              control={create_category_form.control}
+                              name="activeStatus"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>Attiva</FormLabel>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <DialogFooter>
+                            <DialogClose>
+                              <Button type="submit">Crea</Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </form>
+                      </Form>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardFooter>
+            </Card>
+            {/* CREA SOTTOCATEGORIA */}
+            <Card className="flex-1" x-chunk="dashboard-05-chunk-0">
+              <CardHeader className="pb-3">
+                <CardTitle>Le tue sottocategorie</CardTitle>
+                <CardDescription className="max-w-lg text-balance leading-relaxed">
+                  Qui potrai controllare tutte le sottocategorie del tuo sito,
+                  potrai renderle attive o disattivarle, inoltre potrai anche
+                  crearne di nuove.
+                </CardDescription>
+              </CardHeader>
+              <CardFooter>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>Crea una sottocategoria</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Crea una sottocategoria</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <Form {...create_subCategory_form}>
+                        <form
+                          onSubmit={create_subCategory_form.handleSubmit(
+                            onSubmitCreateSubCategory
+                          )}
+                          className="space-y-4"
+                        >
+                          <div>
+                            <label
+                              htmlFor="name"
+                              className="block text-sm font-medium text-gray-700"
+                            >
+                              Nome
+                            </label>
+                            <input
+                              {...create_subCategory_form.register("name")}
+                              id="name"
+                              type="text"
+                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none sm:text-sm"
+                            />
+                            {create_subCategory_form.formState.errors.name && (
+                              <span className="text-red-500">
+                                {
+                                  create_subCategory_form.formState.errors.name
+                                    .message
+                                }
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center">
+                            <FormField
+                              control={create_subCategory_form.control}
+                              name="activeStatus"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>Attiva</FormLabel>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <DialogFooter>
+                            <DialogClose>
+                              <Button type="submit">Crea</Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </form>
+                      </Form>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardFooter>
+            </Card>
+          </div>
+          <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-2 lg:gap-8">
             {/* FORM CATEGORIE */}
-            <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
+            <div className="grid auto-rows-max items-start gap-4 lg:col-span-1 lg:gap-8">
               <Form {...categories_form}>
                 <form
                   onSubmit={categories_form.handleSubmit(onSubmitCategories)}
