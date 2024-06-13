@@ -69,7 +69,7 @@ export async function add_sub_category(req: Request, res: Response) {
         name: subCategory.name,
       },
     });
-    res.status(201).json({ messagge: "Sottocategoria creata con successo" });
+    res.status(201).json({ message: "Sottocategoria creata con successo" });
   } catch (error) {
     return res
       .status(500)
