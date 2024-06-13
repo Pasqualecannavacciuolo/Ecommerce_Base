@@ -38,6 +38,13 @@ import { useNavigate } from "react-router-dom";
 import Cookies from "universal-cookie";
 import { useEffect, useState } from "react";
 import { Category } from "@/models/models";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "./ui/card";
 
 const CategoriesFormSchema = z.object({
   categories: z.array(
@@ -49,7 +56,12 @@ const CategoriesFormSchema = z.object({
 });
 
 const SubCategoriesFormSchema = z.object({
-  subCategories: z.array(z.number()).default([]),
+  subCategories: z.array(
+    z.object({
+      id: z.number(),
+      activeStatus: z.boolean(),
+    })
+  ),
 });
 
 const cookies = new Cookies(null, { path: "/" });
@@ -103,21 +115,16 @@ export default function CategoriesPage() {
   const sub_categories_form = useForm<z.infer<typeof SubCategoriesFormSchema>>({
     resolver: zodResolver(SubCategoriesFormSchema),
     defaultValues: {
-      subCategories: [],
+      subCategories: subCategories.map((sub_category) => ({
+        id: sub_category.id,
+        activeStatus: sub_category.active || false,
+      })),
     },
   });
 
   async function onSubmitCategories(
     data: z.infer<typeof CategoriesFormSchema>
   ) {
-    /*toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });*/
     try {
       // Itera sulle categorie per inviare una richiesta per ciascuna
       for (const category of data.categories) {
@@ -134,7 +141,7 @@ export default function CategoriesPage() {
         );
 
         if (!response.ok) {
-          throw new Error("Errore durante il fetch dei prodotti");
+          throw new Error("Errore durante il fetch delle categorie!");
         }
 
         const responseData = await response.json();
@@ -152,19 +159,44 @@ export default function CategoriesPage() {
     }
   }
 
-  function onSubmitSubCategories(
+  async function onSubmitSubCategories(
     data: z.infer<typeof SubCategoriesFormSchema>
   ) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+    try {
+      // Itera sulle categorie per inviare una richiesta per ciascuna
+      for (const sub_category of data.subCategories) {
+        const response = await fetch(
+          `http://localhost:3000/sub_category/modifyStatus/${sub_category.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-type": "application/json; charset=UTF-8",
+              Authorization: access_token,
+            },
+            body: JSON.stringify({ activeStatus: sub_category.activeStatus }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Errore durante il fetch delle sottocategorie!");
+        }
+
+        const responseData = await response.json();
+        toast({
+          title: "Messaggio",
+          description: <p>{responseData.message}</p>,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      // Gestisci il caso in cui l'access_token sia scaduto
+      if (error instanceof Error && error.message.includes("401")) {
+        // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
+      }
+    }
   }
 
+  // Ottengo al caricamento della pagina i dati dal database e li ordino per nome
   useEffect(() => {
     async function getCategoriesAndSubCategoriesFromDB() {
       const fetchedCategories = await getCategories();
@@ -173,11 +205,18 @@ export default function CategoriesPage() {
           a.name.localeCompare(b.name)
       );
       setCategories(sortedCategories);
-      setSubCategories(await getSubCategories());
+
+      const fetchedSubCategories = await getSubCategories();
+      const sortedSubCategories = fetchedSubCategories.sort(
+        (a: { name: string }, b: { name: string }) =>
+          a.name.localeCompare(b.name)
+      );
+      setSubCategories(sortedSubCategories);
     }
     getCategoriesAndSubCategoriesFromDB();
   }, []);
 
+  // Setto lo stato delle checkbox al caricamento della pagina sulla base dello stato attivo/non attivo delle cateogrie
   useEffect(() => {
     const sortedCategories = [...categories].sort((a, b) =>
       a.name.localeCompare(b.name)
@@ -188,7 +227,17 @@ export default function CategoriesPage() {
         activeStatus: category.active || false,
       })),
     });
-  }, [categories]);
+
+    const sortedSubCategories = [...subCategories].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    sub_categories_form.reset({
+      subCategories: sortedSubCategories.map((sub_category) => ({
+        id: sub_category.id,
+        activeStatus: sub_category.active || false,
+      })),
+    });
+  }, [categories, subCategories]);
 
   // Funzione che ottiene tutte el categorie dal Database
   async function getCategories() {
@@ -291,6 +340,19 @@ export default function CategoriesPage() {
       </header>
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
         <div className="mx-auto grid max-w-[59rem] flex-1 auto-rows-max gap-4">
+          <Card className="" x-chunk="dashboard-05-chunk-0">
+            <CardHeader className="pb-3">
+              <CardTitle>Le tue categorie</CardTitle>
+              <CardDescription className="max-w-lg text-balance leading-relaxed">
+                In questa pagina potrai controllare tutte le categorie e
+                sottocategoria del tuo sito, potrai renderle attive o
+                disattivarle, inoltre potrai anche crearne di nuove.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button>Crea una categoria</Button>
+            </CardFooter>
+          </Card>
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
             {/* FORM CATEGORIE */}
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
@@ -376,29 +438,42 @@ export default function CategoriesPage() {
                             Seleziona le sottocategorie da rendere attive
                           </FormDescription>
                         </div>
-                        {subCategories.map((sub_category) => (
-                          <FormItem
-                            key={sub_category.id}
-                            className="flex flex-row items-start space-x-3 space-y-0"
-                          >
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value.includes(sub_category.id)}
-                                onCheckedChange={(checked) => {
-                                  const newValue = checked
-                                    ? [...field.value, sub_category.id]
-                                    : field.value.filter(
-                                        (value) => value !== sub_category.id
-                                      );
-                                  field.onChange(newValue);
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="text-sm font-normal">
-                              {sub_category.name}
-                            </FormLabel>
-                          </FormItem>
-                        ))}
+                        {subCategories.map((sub_category) => {
+                          const isChecked = field.value.some(
+                            (c) => c.id === sub_category.id && c.activeStatus
+                          );
+                          return (
+                            <FormItem
+                              key={sub_category.id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={isChecked}
+                                  onCheckedChange={(checked) => {
+                                    const updatedSubCategories = checked
+                                      ? [
+                                          ...field.value,
+                                          {
+                                            id: sub_category.id,
+                                            activeStatus: true,
+                                          },
+                                        ]
+                                      : field.value.map((c) =>
+                                          c.id === sub_category.id
+                                            ? { ...c, activeStatus: false }
+                                            : c
+                                        );
+                                    field.onChange(updatedSubCategories);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm font-normal">
+                                {sub_category.name}
+                              </FormLabel>
+                            </FormItem>
+                          );
+                        })}
                         <FormMessage />
                       </FormItem>
                     )}
