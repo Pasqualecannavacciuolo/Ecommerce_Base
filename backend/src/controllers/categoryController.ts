@@ -61,12 +61,13 @@ export async function get_category_by_id(req: Request, res: Response) {
  * @returns
  */
 export async function add_category(req: Request, res: Response) {
-  const category: Category = req.body;
+  const { name, activeStatus } = req.body;
 
   try {
     await prisma.category.create({
       data: {
-        name: category.name,
+        name: name,
+        active: activeStatus,
       },
     });
     res.status(201).json({ message: "Categoria creata con successo" });
