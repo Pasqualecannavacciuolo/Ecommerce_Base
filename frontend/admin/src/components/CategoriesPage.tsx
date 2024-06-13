@@ -45,6 +45,20 @@ import {
   CardDescription,
   CardFooter,
 } from "./ui/card";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+
+const CreateCategorySchema = z.object({
+  name: z.string(),
+  activeStatus: z.boolean(),
+});
 
 const CategoriesFormSchema = z.object({
   categories: z.array(
@@ -74,6 +88,49 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[] | []>([]);
   const [subCategories, setSubCategories] = useState<Category[] | []>([]);
 
+  // Ottengo al caricamento della pagina i dati dal database e li ordino per nome
+  useEffect(() => {
+    async function getCategoriesAndSubCategoriesFromDB() {
+      const fetchedCategories = await getCategories();
+      const sortedCategories = fetchedCategories.sort(
+        (a: { name: string }, b: { name: string }) =>
+          a.name.localeCompare(b.name)
+      );
+      setCategories(sortedCategories);
+
+      const fetchedSubCategories = await getSubCategories();
+      const sortedSubCategories = fetchedSubCategories.sort(
+        (a: { name: string }, b: { name: string }) =>
+          a.name.localeCompare(b.name)
+      );
+      setSubCategories(sortedSubCategories);
+    }
+    getCategoriesAndSubCategoriesFromDB();
+  }, []);
+
+  // Setto lo stato delle checkbox al caricamento della pagina sulla base dello stato attivo/non attivo delle cateogrie
+  useEffect(() => {
+    const sortedCategories = [...categories].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    categories_form.reset({
+      categories: sortedCategories.map((category) => ({
+        id: category.id,
+        activeStatus: category.active || false,
+      })),
+    });
+
+    const sortedSubCategories = [...subCategories].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    sub_categories_form.reset({
+      subCategories: sortedSubCategories.map((sub_category) => ({
+        id: sub_category.id,
+        activeStatus: sub_category.active || false,
+      })),
+    });
+  }, [categories, subCategories]);
+
   // Viene attivato quando clicco sulla voce per effettuare il logout
   async function logout() {
     try {
@@ -102,6 +159,14 @@ export default function CategoriesPage() {
     }
   }
 
+  const create_category_form = useForm<z.infer<typeof CreateCategorySchema>>({
+    resolver: zodResolver(CreateCategorySchema),
+    defaultValues: {
+      name: "",
+      activeStatus: false,
+    },
+  });
+
   const categories_form = useForm<z.infer<typeof CategoriesFormSchema>>({
     resolver: zodResolver(CategoriesFormSchema),
     defaultValues: {
@@ -121,6 +186,50 @@ export default function CategoriesPage() {
       })),
     },
   });
+
+  async function onSubmitCreateCategory(
+    data: z.infer<typeof CreateCategorySchema>
+  ) {
+    console.log(data);
+    try {
+      // Itera sulle categorie per inviare una richiesta per ciascuna
+      const response = await fetch(`http://localhost:3000/category/add`, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+          Authorization: access_token,
+        },
+        body: JSON.stringify({
+          name: data.name,
+          activeStatus: data.activeStatus,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Errore durante la creazione della categoria!");
+      }
+
+      const responseData = await response.json();
+      toast({
+        title: "Messaggio",
+        description: <p>{responseData.message}</p>,
+      });
+
+      // Una volta creata una categoria ottengo nuovamente la lista delle categorie create nel database
+      const fetchedCategories = await getCategories();
+      const sortedCategories = fetchedCategories.sort(
+        (a: { name: string }, b: { name: string }) =>
+          a.name.localeCompare(b.name)
+      );
+      setCategories(sortedCategories);
+    } catch (error) {
+      console.log(error);
+      // Gestisci il caso in cui l'access_token sia scaduto
+      if (error instanceof Error && error.message.includes("401")) {
+        // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
+      }
+    }
+  }
 
   async function onSubmitCategories(
     data: z.infer<typeof CategoriesFormSchema>
@@ -195,49 +304,6 @@ export default function CategoriesPage() {
       }
     }
   }
-
-  // Ottengo al caricamento della pagina i dati dal database e li ordino per nome
-  useEffect(() => {
-    async function getCategoriesAndSubCategoriesFromDB() {
-      const fetchedCategories = await getCategories();
-      const sortedCategories = fetchedCategories.sort(
-        (a: { name: string }, b: { name: string }) =>
-          a.name.localeCompare(b.name)
-      );
-      setCategories(sortedCategories);
-
-      const fetchedSubCategories = await getSubCategories();
-      const sortedSubCategories = fetchedSubCategories.sort(
-        (a: { name: string }, b: { name: string }) =>
-          a.name.localeCompare(b.name)
-      );
-      setSubCategories(sortedSubCategories);
-    }
-    getCategoriesAndSubCategoriesFromDB();
-  }, []);
-
-  // Setto lo stato delle checkbox al caricamento della pagina sulla base dello stato attivo/non attivo delle cateogrie
-  useEffect(() => {
-    const sortedCategories = [...categories].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-    categories_form.reset({
-      categories: sortedCategories.map((category) => ({
-        id: category.id,
-        activeStatus: category.active || false,
-      })),
-    });
-
-    const sortedSubCategories = [...subCategories].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-    sub_categories_form.reset({
-      subCategories: sortedSubCategories.map((sub_category) => ({
-        id: sub_category.id,
-        activeStatus: sub_category.active || false,
-      })),
-    });
-  }, [categories, subCategories]);
 
   // Funzione che ottiene tutte el categorie dal Database
   async function getCategories() {
@@ -350,7 +416,74 @@ export default function CategoriesPage() {
               </CardDescription>
             </CardHeader>
             <CardFooter>
-              <Button>Crea una categoria</Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>Crea una categoria</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Crea una categoria</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <Form {...create_category_form}>
+                      <form
+                        onSubmit={create_category_form.handleSubmit(
+                          onSubmitCreateCategory
+                        )}
+                        className="space-y-4"
+                      >
+                        <div>
+                          <label
+                            htmlFor="name"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Nome
+                          </label>
+                          <input
+                            {...create_category_form.register("name")}
+                            id="name"
+                            type="text"
+                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none sm:text-sm"
+                          />
+                          {create_category_form.formState.errors.name && (
+                            <span className="text-red-500">
+                              {
+                                create_category_form.formState.errors.name
+                                  .message
+                              }
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center">
+                          <FormField
+                            control={create_category_form.control}
+                            name="activeStatus"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <div className="space-y-1 leading-none">
+                                  <FormLabel>Attiva</FormLabel>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <DialogFooter>
+                          <DialogClose>
+                            <Button type="submit">Crea</Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </form>
+                    </Form>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardFooter>
           </Card>
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
