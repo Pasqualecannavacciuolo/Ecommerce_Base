@@ -61,12 +61,13 @@ export async function get_sub_category_by_id(req: Request, res: Response) {
  * @returns
  */
 export async function add_sub_category(req: Request, res: Response) {
-  const subCategory: SubCategory = req.body;
+  const { name, activeStatus } = req.body;
 
   try {
     await prisma.subCategory.create({
       data: {
-        name: subCategory.name,
+        name: name,
+        active: activeStatus,
       },
     });
     res.status(201).json({ message: "Sottocategoria creata con successo" });
