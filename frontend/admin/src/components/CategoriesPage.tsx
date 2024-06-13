@@ -168,8 +168,9 @@ export default function CategoriesPage() {
   useEffect(() => {
     async function getCategoriesAndSubCategoriesFromDB() {
       const fetchedCategories = await getCategories();
-      const sortedCategories = fetchedCategories.sort((a, b) =>
-        a.name.localeCompare(b.name)
+      const sortedCategories = fetchedCategories.sort(
+        (a: { name: string }, b: { name: string }) =>
+          a.name.localeCompare(b.name)
       );
       setCategories(sortedCategories);
       setSubCategories(await getSubCategories());
