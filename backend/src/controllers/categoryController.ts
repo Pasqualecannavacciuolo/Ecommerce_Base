@@ -69,7 +69,7 @@ export async function add_category(req: Request, res: Response) {
         name: category.name,
       },
     });
-    res.status(201).json({ messagge: "Categoria creata con successo" });
+    res.status(201).json({ message: "Categoria creata con successo" });
   } catch (error) {
     return res.status(500).send("Errore durante la creazione della categoria");
   }
