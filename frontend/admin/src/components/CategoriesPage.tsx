@@ -40,7 +40,12 @@ import { useEffect, useState } from "react";
 import { Category } from "@/models/models";
 
 const CategoriesFormSchema = z.object({
-  categories: z.array(z.number()).default([]),
+  categories: z.array(
+    z.object({
+      id: z.number(),
+      activeStatus: z.boolean(),
+    })
+  ),
 });
 
 const SubCategoriesFormSchema = z.object({
@@ -88,7 +93,10 @@ export default function CategoriesPage() {
   const categories_form = useForm<z.infer<typeof CategoriesFormSchema>>({
     resolver: zodResolver(CategoriesFormSchema),
     defaultValues: {
-      categories: [],
+      categories: categories.map((category) => ({
+        id: category.id,
+        activeStatus: category.active || false,
+      })),
     },
   });
 
@@ -99,15 +107,49 @@ export default function CategoriesPage() {
     },
   });
 
-  function onSubmitCategories(data: z.infer<typeof CategoriesFormSchema>) {
-    toast({
+  async function onSubmitCategories(
+    data: z.infer<typeof CategoriesFormSchema>
+  ) {
+    /*toast({
       title: "You submitted the following values:",
       description: (
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
           <code className="text-white">{JSON.stringify(data, null, 2)}</code>
         </pre>
       ),
-    });
+    });*/
+    try {
+      // Itera sulle categorie per inviare una richiesta per ciascuna
+      for (const category of data.categories) {
+        const response = await fetch(
+          `http://localhost:3000/category/modifyStatus/${category.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-type": "application/json; charset=UTF-8",
+              Authorization: access_token,
+            },
+            body: JSON.stringify({ activeStatus: category.activeStatus }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Errore durante il fetch dei prodotti");
+        }
+
+        const responseData = await response.json();
+        toast({
+          title: "Messaggio",
+          description: <p>{responseData.message}</p>,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      // Gestisci il caso in cui l'access_token sia scaduto
+      if (error instanceof Error && error.message.includes("401")) {
+        // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
+      }
+    }
   }
 
   function onSubmitSubCategories(
@@ -125,11 +167,27 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     async function getCategoriesAndSubCategoriesFromDB() {
-      setCategories(await getCategories());
+      const fetchedCategories = await getCategories();
+      const sortedCategories = fetchedCategories.sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
+      setCategories(sortedCategories);
       setSubCategories(await getSubCategories());
     }
     getCategoriesAndSubCategoriesFromDB();
   }, []);
+
+  useEffect(() => {
+    const sortedCategories = [...categories].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+    categories_form.reset({
+      categories: sortedCategories.map((category) => ({
+        id: category.id,
+        activeStatus: category.active || false,
+      })),
+    });
+  }, [categories]);
 
   // Funzione che ottiene tutte el categorie dal Database
   async function getCategories() {
@@ -233,6 +291,7 @@ export default function CategoriesPage() {
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
         <div className="mx-auto grid max-w-[59rem] flex-1 auto-rows-max gap-4">
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
+            {/* FORM CATEGORIE */}
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
               <Form {...categories_form}>
                 <form
@@ -250,29 +309,42 @@ export default function CategoriesPage() {
                             Seleziona le categorie da rendere attive
                           </FormDescription>
                         </div>
-                        {categories.map((category) => (
-                          <FormItem
-                            key={category.id}
-                            className="flex flex-row items-start space-x-3 space-y-0"
-                          >
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value.includes(category.id)}
-                                onCheckedChange={(checked) => {
-                                  const newValue = checked
-                                    ? [...field.value, category.id]
-                                    : field.value.filter(
-                                        (value) => value !== category.id
-                                      );
-                                  field.onChange(newValue);
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="text-sm font-normal">
-                              {category.name}
-                            </FormLabel>
-                          </FormItem>
-                        ))}
+                        {categories.map((category) => {
+                          const isChecked = field.value.some(
+                            (c) => c.id === category.id && c.activeStatus
+                          );
+                          return (
+                            <FormItem
+                              key={category.id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={isChecked}
+                                  onCheckedChange={(checked) => {
+                                    const updatedCategories = checked
+                                      ? [
+                                          ...field.value,
+                                          {
+                                            id: category.id,
+                                            activeStatus: true,
+                                          },
+                                        ]
+                                      : field.value.map((c) =>
+                                          c.id === category.id
+                                            ? { ...c, activeStatus: false }
+                                            : c
+                                        );
+                                    field.onChange(updatedCategories);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm font-normal">
+                                {category.name}
+                              </FormLabel>
+                            </FormItem>
+                          );
+                        })}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -281,6 +353,7 @@ export default function CategoriesPage() {
                 </form>
               </Form>
             </div>
+            {/* FORM SOTTOCATEGORIE */}
             <div className="grid auto-rows-max items-start gap-4 lg:col-span-1 lg:gap-8">
               <Form {...sub_categories_form}>
                 <form
