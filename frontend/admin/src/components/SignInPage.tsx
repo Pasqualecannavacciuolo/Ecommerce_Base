@@ -86,8 +86,8 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="flex h-screen">
-      <Card className="m-auto">
+    <div className="flex items-center justify-center min-h-screen">
+      <Card className="mx-auto max-w-sm w-full">
         <CardHeader>
           <CardTitle className="text-xl">Accedi</CardTitle>
           <CardDescription>Accedi alla tua dashboard</CardDescription>
