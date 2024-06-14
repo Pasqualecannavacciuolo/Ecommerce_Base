@@ -205,7 +205,6 @@ export default function CategoriesPage() {
   async function onSubmitCreateCategory(
     data: z.infer<typeof CreateCategorySchema>
   ) {
-    console.log(data);
     try {
       // Itera sulle categorie per inviare una richiesta per ciascuna
       const response = await fetch(`http://localhost:3000/category/add`, {
@@ -249,7 +248,6 @@ export default function CategoriesPage() {
   async function onSubmitCreateSubCategory(
     data: z.infer<typeof CreateSubCategorySchema>
   ) {
-    console.log(data);
     try {
       // Itera sulle categorie per inviare una richiesta per ciascuna
       const response = await fetch(`http://localhost:3000/sub_category/add`, {

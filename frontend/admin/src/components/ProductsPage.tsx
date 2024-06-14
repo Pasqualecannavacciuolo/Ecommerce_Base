@@ -278,7 +278,9 @@ export default function ProductsPage() {
                 </CardDescription>
               </CardHeader>
               <CardFooter>
-                <Button>Aggiungi un prodotto</Button>
+                <Link to="/prodotti/aggiungi">
+                  <Button>Aggiungi un prodotto</Button>
+                </Link>
               </CardFooter>
             </Card>
             <Card x-chunk="dashboard-05-chunk-3">
