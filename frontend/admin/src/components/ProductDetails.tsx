@@ -230,8 +230,8 @@ export default function ProductsDetails() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {product?.variants.variants &&
-                        product.variants.variants.map(
+                      {product?.variants &&
+                        product.variants.map(
                           (
                             variant: {
                               sku: string;
