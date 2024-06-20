@@ -11,7 +11,7 @@ export interface SimpleProduct {
   id: number;
   product_name: string;
   description: string;
-  price: number;
+  price?: number;
   status: string;
   variants: any;
   category: string;
