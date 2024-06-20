@@ -61,7 +61,7 @@ export default function ProductsDetails() {
   const { id } = useParams();
   const [product, setProduct] = useState<SimpleProduct | null>(null);
 
-  // ToggleGroupItem aggiornato con classi Tailwind e proprietà necessarie
+  // ToggleGroupItem
   const ToggleGroupItem = ({ value, onClick, selected, children }) => {
     return (
       <button
@@ -76,7 +76,7 @@ export default function ProductsDetails() {
     );
   };
 
-  // ToggleGroup aggiornato per utilizzare Tailwind CSS
+  // ToggleGroup
   const ToggleGroup = ({ type, value, variant, onChange, children }) => {
     const [selectedValue, setSelectedValue] = useState(value);
 
