@@ -121,7 +121,7 @@ export default function ProductsPage() {
     } catch (error) {
       console.log(error);
       // Gestisci il caso in cui l'access_token sia scaduto
-      if (error.message.includes("401")) {
+      if (error instanceof Error && error.message.includes("401")) {
         // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
       }
     }
@@ -147,7 +147,7 @@ export default function ProductsPage() {
     } catch (error) {
       console.log(error);
       // Gestisci il caso in cui l'access_token sia scaduto
-      if (error.message.includes("401")) {
+      if (error instanceof Error && error.message.includes("401")) {
         // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
       }
     }
@@ -176,7 +176,7 @@ export default function ProductsPage() {
     } catch (error) {
       console.log(error);
       // Gestisci il caso in cui l'access_token sia scaduto
-      if (error.message.includes("401")) {
+      if (error instanceof Error && error.message.includes("401")) {
         // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
       }
     }
@@ -202,7 +202,7 @@ export default function ProductsPage() {
     } catch (error) {
       console.log(error);
       // Gestisci il caso in cui l'access_token sia scaduto
-      if (error.message.includes("401")) {
+      if (error instanceof Error && error.message.includes("401")) {
         // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
       }
     }
@@ -493,7 +493,7 @@ export default function ProductsPage() {
                       {productsBozze.map((product, index) => (
                         <TableRow
                           key={index}
-                          onClick={() => handleClick(index, product)}
+                          onClick={() => handleClick(index, product.id)}
                           className={cn("cursor-pointer", {
                             "bg-accent": activeIndex === index,
                           })}
@@ -586,7 +586,7 @@ export default function ProductsPage() {
                       {productsArchiviati.map((product, index) => (
                         <TableRow
                           key={index}
-                          onClick={() => handleClick(index, product)}
+                          onClick={() => handleClick(index, product.id)}
                           className={cn("cursor-pointer", {
                             "bg-accent": activeIndex === index,
                           })}
@@ -679,7 +679,7 @@ export default function ProductsPage() {
                       {productsTutti.map((product, index) => (
                         <TableRow
                           key={index}
-                          onClick={() => handleClick(index, product)}
+                          onClick={() => handleClick(index, product.id)}
                           className={cn("cursor-pointer", {
                             "bg-accent": activeIndex === index,
                           })}
