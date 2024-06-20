@@ -147,7 +147,6 @@ export async function add_product(req: Request, res: Response) {
 export async function modify_product_by_id(req: Request, res: Response) {
   const id = parseInt(req.params.id);
   const productFromBody: Product = req.body;
-  console.log(productFromBody);
   try {
     const product = await prisma.product.update({
       where: {
