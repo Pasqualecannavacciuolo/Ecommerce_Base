@@ -49,6 +49,8 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Textarea } from "./ui/textarea";
 import { useNavigate } from "react-router-dom";
+import { toast } from "./ui/use-toast";
+import React from "react";
 
 const cookies = new Cookies(null, { path: "/" });
 
@@ -59,6 +61,47 @@ export default function ProductsDetails() {
   const { id } = useParams();
   const [product, setProduct] = useState<SimpleProduct | null>(null);
 
+  // ToggleGroupItem aggiornato con classi Tailwind e proprietà necessarie
+  const ToggleGroupItem = ({ value, onClick, selected, children }) => {
+    return (
+      <button
+        type="button"
+        className={`py-2 px-4 rounded-md border ${
+          selected ? "bg-slate-100" : "bg-white text-gray-700"
+        }`}
+        onClick={onClick}
+      >
+        {children}
+      </button>
+    );
+  };
+
+  // ToggleGroup aggiornato per utilizzare Tailwind CSS
+  const ToggleGroup = ({ type, value, variant, onChange, children }) => {
+    const [selectedValue, setSelectedValue] = useState(value);
+
+    const handleItemClick = (itemValue) => {
+      setSelectedValue(itemValue);
+      onChange(itemValue);
+    };
+
+    useEffect(() => {
+      setSelectedValue(value);
+    }, [value]);
+
+    return (
+      <div className={`flex gap-4 ${variant}`}>
+        {React.Children.map(children, (child) =>
+          React.cloneElement(child, {
+            onClick: () => handleItemClick(child.props.value), // Aggiungo onClick
+            selected: child.props.value === selectedValue, // Aggiungo selected
+            value: child.props.value, // Aggiungo value
+          })
+        )}
+      </div>
+    );
+  };
+
   useEffect(() => {
     async function getProductFromDB() {
       setProduct(await getProduct());
@@ -66,6 +109,7 @@ export default function ProductsDetails() {
     }
     getProductFromDB();
   }, []);
+
   // Viene attivato quando clicco sulla voce per effettuare il logout
   async function logout() {
     try {
@@ -119,6 +163,88 @@ export default function ProductsDetails() {
       }
     }
   }
+
+  // Funzione che aggiorna il prodotto nel Database
+  async function updateProduct() {
+    if (product) {
+      product.variants.forEach((variant: { price: number; stock: number }) => {
+        variant.price = Number(variant.price);
+        variant.stock = Number(variant.stock);
+      });
+      try {
+        // Itera sulle categorie per inviare una richiesta per ciascuna
+        const response = await fetch(
+          `http://localhost:3000/product/modify/${id}`,
+          {
+            method: "PUT",
+            body: JSON.stringify(product),
+            headers: {
+              "Content-type": "application/json; charset=UTF-8",
+              Authorization: access_token,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Errore durante l'aggiornamento del prodotto!");
+        }
+
+        const responseData = await response.json();
+        toast({
+          title: "Messaggio",
+          description: <p>{responseData.message}</p>,
+        });
+      } catch (error) {
+        console.log(error);
+        // Gestisci il caso in cui l'access_token sia scaduto
+        if (error instanceof Error && error.message.includes("401")) {
+          // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
+        }
+      }
+    }
+  }
+
+  const handleAddVariant = () => {
+    const newVariant = {
+      sku: "",
+      stock: 0,
+      price: 0,
+      size: "S",
+    };
+
+    // Assicurati di copiare lo stato precedente e applicare le modifiche
+    setProduct((prevProduct) => {
+      if (!prevProduct) return null; // Gestione caso in cui prevProduct sia null
+
+      // Clona l'array esistente di varianti o inizializza una nuova lista se non esistono varianti
+      const updatedVariants = prevProduct.variants
+        ? [...prevProduct.variants, newVariant]
+        : [newVariant];
+
+      // Restituisci un nuovo oggetto SimpleProduct con le varianti aggiornate
+      return {
+        ...prevProduct,
+        variants: updatedVariants,
+      };
+    });
+  };
+
+  const handleVariantChange = (value, index, field) => {
+    setProduct((prevProduct) => {
+      if (!prevProduct) return null;
+
+      const updatedVariants = [...prevProduct.variants];
+      updatedVariants[index] = {
+        ...updatedVariants[index],
+        [field]: value,
+      };
+
+      return {
+        ...prevProduct,
+        variants: updatedVariants,
+      };
+    });
+  };
 
   return (
     <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
@@ -183,7 +309,9 @@ export default function ProductsDetails() {
               Disponibile
             </Badge>
             <div className="hidden items-center gap-2 md:ml-auto md:flex">
-              <Button size="sm">Salva modifiche</Button>
+              <Button size="sm" onClick={() => updateProduct()}>
+                Salva modifiche
+              </Button>
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
@@ -242,8 +370,21 @@ export default function ProductsDetails() {
                             index: number
                           ) => (
                             <TableRow key={index}>
-                              <TableCell className="font-semibold">
-                                {variant.sku}
+                              <TableCell>
+                                <Label
+                                  htmlFor={`sku-${index + 1}`}
+                                  className="sr-only"
+                                >
+                                  SKU
+                                </Label>
+                                <Input
+                                  id={`sku-${index + 1}`}
+                                  type="text"
+                                  defaultValue={variant.sku}
+                                  onChange={(e) =>
+                                    handleVariantChange(e, index, "sku")
+                                  }
+                                />
                               </TableCell>
                               <TableCell>
                                 <Label
@@ -256,6 +397,9 @@ export default function ProductsDetails() {
                                   id={`stock-${index + 1}`}
                                   type="number"
                                   defaultValue={variant.stock}
+                                  onChange={(e) =>
+                                    handleVariantChange(e, index, "stock")
+                                  }
                                 />
                               </TableCell>
                               <TableCell>
@@ -269,13 +413,18 @@ export default function ProductsDetails() {
                                   id={`price-${index + 1}`}
                                   type="number"
                                   defaultValue={variant.price}
+                                  onChange={(e) =>
+                                    handleVariantChange(e, index, "price")
+                                  }
                                 />
                               </TableCell>
                               <TableCell>
                                 <ToggleGroup
                                   type="single"
-                                  defaultValue={variant.size}
-                                  variant="outline"
+                                  value={variant.size}
+                                  onChange={(value) =>
+                                    handleVariantChange(value, index, "size")
+                                  }
                                 >
                                   <ToggleGroupItem value="S">S</ToggleGroupItem>
                                   <ToggleGroupItem value="M">M</ToggleGroupItem>
@@ -289,7 +438,12 @@ export default function ProductsDetails() {
                   </Table>
                 </CardContent>
                 <CardFooter className="justify-center border-t p-4">
-                  <Button size="sm" variant="ghost" className="gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="gap-1"
+                    onClick={handleAddVariant}
+                  >
                     <PlusCircle className="h-3.5 w-3.5" />
                     Aggiungi variante
                   </Button>
