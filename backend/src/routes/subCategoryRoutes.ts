@@ -11,18 +11,21 @@ const SubCategoryRouter = express.Router();
 
 SubCategoryRouter.get(
   "/sub_category/get",
-  authenticate,
+  /*authenticate, */
   get_all_sub_categories
 );
 SubCategoryRouter.get(
   "/sub_category/get/:id",
-  authenticate,
+  /*authenticate, */
   get_sub_category_by_id
 );
-SubCategoryRouter.post("/sub_category/add", authenticate, add_sub_category);
+SubCategoryRouter.post(
+  "/sub_category/add",
+  /*authenticate, */ add_sub_category
+);
 SubCategoryRouter.put(
   "/sub_category/modifyStatus/:id",
-  authenticate,
+  /*authenticate, */
   modify_status_by_id
 );
 
