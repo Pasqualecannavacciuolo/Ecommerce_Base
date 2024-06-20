@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Search, PlusCircle, Upload, Check, CircleMinus } from "lucide-react";
+import { Search, PlusCircle, Upload, CircleMinus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import Cookies from "universal-cookie";
 import { Link } from "react-router-dom";
@@ -48,31 +48,40 @@ const cookies = new Cookies(null, { path: "/" });
 const access_token = cookies.get("access_token");
 
 const CreateProductSchema = z.object({
-  product_name: z.string().min(0, "Il nome del prodotto è richiesto"),
-  description: z.string().min(0, "La descrizione del prodotto è richiesta"),
+  product_name: z.string().min(1, "Il nome del prodotto è richiesto"),
+  description: z.string().min(1, "La descrizione del prodotto è richiesta"),
   variants: z.array(
     z.object({
-      sku: z.string().min(0, "Il campo SKU è richiesto"),
-      size: z.string().min(0, "Il campo Taglia è richiesto"),
-      price: z.number().min(0, "Il prezzo deve essere maggiore di zero"),
-      stock: z.number().min(0, "Lo stock deve essere maggiore o uguale a zero"),
+      sku: z.string().min(1, "Campo obbligatorio"),
+      size: z.string().min(1, "Campo obbligatorio"),
+      price: z.number(),
+      stock: z.number(),
     })
   ),
+  status: z.string().min(1, "Lo status del prodotto deve essere specificato"),
+  category: z
+    .string()
+    .min(1, "Lo categoria del prodotto deve essere specificata"),
+  sub_category: z
+    .string()
+    .min(1, "Lo sottocategoria del prodotto deve essere specificata"),
 });
 
 export default function CreateProductPage() {
-  const [product, setProduct] = useState<SimpleProduct | null>(null);
   const {
     control,
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(CreateProductSchema), // Resolver per la validazione dello schema con Zod
+    resolver: zodResolver(CreateProductSchema),
     defaultValues: {
       product_name: "",
       description: "",
-      variants: [], // Inizializza variants come un array vuoto
+      variants: [],
+      status: "",
+      category: "",
+      sub_category: "",
     },
   });
 
@@ -81,18 +90,17 @@ export default function CreateProductPage() {
     name: "variants",
   });
 
-  function onSubmitCreateProduct(data: z.infer<typeof CreateProductSchema>) {
-    console.log(data);
-  }
-
   // Funzione per gestire l'invio del form
   const onSubmit = (data: z.infer<typeof CreateProductSchema>) => {
     data.variants.forEach((variant) => {
       variant.price = Number(variant.price);
       variant.stock = Number(variant.stock);
     });
-    console.log(data); // Stampa i dati del form quando viene inviato
-    // Puoi gestire qui la logica di invio al backend, ad esempio con fetch o Axios
+    addProduct(data);
+  };
+
+  const onError = (errors: unknown) => {
+    console.log("Form Errors:", errors);
   };
 
   // Funzione per aggiungere una nuova variante al form
@@ -129,10 +137,11 @@ export default function CreateProductPage() {
   }
 
   // Funzione che aggiunge il prodotto dal Database
-  async function addProduct() {
+  async function addProduct(product: z.infer<typeof CreateProductSchema>) {
     try {
       const response = await fetch(`http://localhost:3000/product/add`, {
         method: "POST",
+        body: JSON.stringify(product),
         headers: {
           "Content-type": "application/json; charset=UTF-8",
           Authorization: access_token,
@@ -140,7 +149,7 @@ export default function CreateProductPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Errore durante il fetch dei prodotti");
+        throw new Error("Errore durante la creazione del prodotto");
       }
 
       const data = await response.json();
@@ -148,7 +157,7 @@ export default function CreateProductPage() {
     } catch (error) {
       console.log(error);
       // Gestisci il caso in cui l'access_token sia scaduto
-      if (error.message.includes("401")) {
+      if (error instanceof Error && error.message.includes("401")) {
         // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
       }
     }
@@ -210,7 +219,10 @@ export default function CreateProductPage() {
       <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
         <div className="mx-auto grid max-w-[59rem] flex-1 auto-rows-max gap-4">
           <div className="flex items-center gap-4">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={handleSubmit(onSubmit, onError)}
+              className="space-y-4"
+            >
               <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
                 Aggiungi un prodotto
               </h1>
@@ -237,7 +249,7 @@ export default function CreateProductPage() {
                             className="w-full"
                           />
                           {errors.product_name && (
-                            <span className="text-red-500">
+                            <span className="text-red-500 text-sm">
                               {errors.product_name.message}
                             </span>
                           )}
@@ -249,6 +261,11 @@ export default function CreateProductPage() {
                             id="description"
                             className="min-h-32"
                           />
+                          {errors.description && (
+                            <span className="text-red-500 text-sm">
+                              {errors.description.message}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -256,21 +273,19 @@ export default function CreateProductPage() {
                   {/* DISPONIBILITA E VARIANTI */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Creazione Prodotto</CardTitle>
+                      <CardTitle>Varianti</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 gap-4">
+                      <div className="grid gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">
-                            Varianti
-                          </label>
                           <div className="space-y-4">
                             {fields.map((variant, index) => (
                               <div
                                 key={variant.id}
-                                className="flex flex-wrap space-x-4 items-center mb-4"
+                                className="grid grid-cols-12 gap-4 items-center mb-4"
                               >
-                                <div className="flex-1">
+                                {/* SKU */}
+                                <div className="col-span-3">
                                   <label
                                     htmlFor={`variants[${index}].sku`}
                                     className="block text-sm font-medium text-gray-700"
@@ -285,15 +300,16 @@ export default function CreateProductPage() {
                                     className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                                   />
                                   {errors.variants?.[index]?.sku && (
-                                    <span className="text-red-500">
+                                    <span className="text-red-500 text-xs">
                                       {errors.variants[index]?.sku.message}
                                     </span>
                                   )}
                                 </div>
-                                <div className="flex-1">
+                                {/* TAGLIA */}
+                                <div className="col-span-3">
                                   <label
                                     htmlFor={`variants[${index}].size`}
-                                    className="block text-sm font-medium text-gray-700"
+                                    className="block text-sm font-medium text-gray-700 mb-2"
                                   >
                                     Taglia
                                   </label>
@@ -323,14 +339,14 @@ export default function CreateProductPage() {
                                       </ToggleGroup>
                                     )}
                                   />
-
                                   {errors.variants?.[index]?.size && (
-                                    <span className="text-red-500">
+                                    <span className="text-red-500 text-xs">
                                       {errors.variants[index]?.size.message}
                                     </span>
                                   )}
                                 </div>
-                                <div className="flex-1">
+                                {/* PREZZO */}
+                                <div className="col-span-2">
                                   <label
                                     htmlFor={`variants[${index}].price`}
                                     className="block text-sm font-medium text-gray-700"
@@ -346,13 +362,9 @@ export default function CreateProductPage() {
                                     defaultValue={variant.price}
                                     className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                                   />
-                                  {errors.variants?.[index]?.price && (
-                                    <span className="text-red-500">
-                                      {errors.variants[index]?.price.message}
-                                    </span>
-                                  )}
                                 </div>
-                                <div className="flex-1">
+                                {/* STOCK */}
+                                <div className="col-span-2">
                                   <label
                                     htmlFor={`variants[${index}].stock`}
                                     className="block text-sm font-medium text-gray-700"
@@ -368,19 +380,15 @@ export default function CreateProductPage() {
                                     defaultValue={variant.stock}
                                     className="mt-1 p-2 w-full border border-gray-300 rounded-md"
                                   />
-                                  {errors.variants?.[index]?.stock && (
-                                    <span className="text-red-500">
-                                      {errors.variants[index]?.stock.message}
-                                    </span>
-                                  )}
                                 </div>
-                                <div className="flex-none">
+                                {/* REMOVE BUTTON */}
+                                <div className="col-span-1 flex items-center mt-5">
                                   <button
                                     type="button"
                                     onClick={() => remove(index)}
-                                    className="flex items-center justify-center"
+                                    className="flex items-center justify-center text-red-500"
                                   >
-                                    <CircleMinus className="h-5 w-5 mt-5" />
+                                    <CircleMinus className="h-5 w-5" />
                                   </button>
                                 </div>
                               </div>
@@ -413,48 +421,35 @@ export default function CreateProductPage() {
                       <div className="grid gap-6">
                         <div className="grid gap-3">
                           <Label htmlFor="status">Stato</Label>
-                          <Select>
-                            <SelectTrigger
-                              id="status"
-                              aria-label="Seleziona stato"
-                            >
-                              <SelectValue placeholder={product?.status} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="bozza">
-                                {product?.status === "Bozza" ? (
-                                  <span className="flex items-center">
-                                    Bozza
-                                    <Check className="h-3 w-3 text-emerald-600 ml-1" />
-                                  </span>
-                                ) : (
-                                  <>Bozza</>
-                                )}
-                              </SelectItem>
-
-                              <SelectItem value="attivo">
-                                {product?.status === "Attivo" ? (
-                                  <span className="flex items-center">
-                                    Attivo
-                                    <Check className="h-3 w-3 text-emerald-600 ml-1" />
-                                  </span>
-                                ) : (
-                                  <>Attivo</>
-                                )}
-                              </SelectItem>
-
-                              <SelectItem value="archiviato">
-                                {product?.status === "Archiviato" ? (
-                                  <span className="flex items-center">
+                          <Controller
+                            control={control}
+                            name="status"
+                            render={({ field }) => (
+                              <Select onValueChange={field.onChange}>
+                                <SelectTrigger
+                                  id="status"
+                                  aria-label="Seleziona stato"
+                                >
+                                  <SelectValue
+                                    placeholder="Seleziona stato"
+                                    {...field}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="bozza">Bozza</SelectItem>
+                                  <SelectItem value="attivo">Attivo</SelectItem>
+                                  <SelectItem value="archiviato">
                                     Archiviato
-                                    <Check className="h-3 w-3 text-emerald-600 ml-1" />
-                                  </span>
-                                ) : (
-                                  <>Archiviato</>
-                                )}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {errors.status && (
+                            <span className="text-red-500 text-sm">
+                              {errors.status.message}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -465,48 +460,80 @@ export default function CreateProductPage() {
                       <CardTitle>Categoria prodotto</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid gap-9 sm:grid-cols-1">
-                        <div>
+                      <div className="grid gap-6">
+                        <div className="grid gap-3">
                           <Label htmlFor="category">Categoria</Label>
-                          <Select>
-                            <SelectTrigger
-                              id="category"
-                              aria-label={product?.category}
-                            >
-                              <SelectValue placeholder={product?.category} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="accessori">
-                                Accessori
-                              </SelectItem>
-                              <SelectItem value="elettronica">
-                                Elettronica
-                              </SelectItem>
-                              <SelectItem value="abbigliamento">
-                                Abbigliamento
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Controller
+                            control={control}
+                            name="category"
+                            render={({ field }) => (
+                              <Select onValueChange={field.onChange}>
+                                <SelectTrigger
+                                  id="category"
+                                  aria-label="Seleziona categoria"
+                                >
+                                  <SelectValue
+                                    placeholder="Seleziona categoria"
+                                    {...field}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="accessori">
+                                    Accessori
+                                  </SelectItem>
+                                  <SelectItem value="elettronica">
+                                    Elettronica
+                                  </SelectItem>
+                                  <SelectItem value="abbigliamento">
+                                    Abbigliamento
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {errors.category && (
+                            <span className="text-red-500 text-sm">
+                              {errors.category.message}
+                            </span>
+                          )}
                         </div>
-                        <div>
-                          <Label htmlFor="subcategory">Sottocategoria</Label>
-                          <Select>
-                            <SelectTrigger
-                              id="subcategory"
-                              aria-label={product?.sub_category}
-                            >
-                              <SelectValue
-                                placeholder={product?.sub_category}
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                              <SelectItem value="hoodies">Hoodies</SelectItem>
-                              <SelectItem value="sweatshirts">
-                                Sweatshirts
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                      </div>
+                      <div className="grid gap-6 mt-5">
+                        <div className="grid gap-3">
+                          <Label htmlFor="sub_category">Sottocategoria</Label>
+                          <Controller
+                            control={control}
+                            name="sub_category"
+                            render={({ field }) => (
+                              <Select onValueChange={field.onChange}>
+                                <SelectTrigger
+                                  id="sub_category"
+                                  aria-label="Seleziona sottocategoria"
+                                >
+                                  <SelectValue
+                                    placeholder="Seleziona sottocategoria"
+                                    {...field}
+                                  />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="accessori">
+                                    Magliette
+                                  </SelectItem>
+                                  <SelectItem value="elettronica">
+                                    Pantaloni
+                                  </SelectItem>
+                                  <SelectItem value="abbigliamento">
+                                    Scarpe
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {errors.sub_category && (
+                            <span className="text-red-500 text-sm">
+                              {errors.sub_category.message}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </CardContent>
