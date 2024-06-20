@@ -118,14 +118,18 @@ export async function get_all_products_archiviati(req: Request, res: Response) {
  */
 export async function add_product(req: Request, res: Response) {
   const product: Product = req.body;
-
+  console.log(product);
   try {
     await prisma.product.create({
       data: {
         product_name: product.product_name,
         description: product.description,
-        price: product.price,
-        stock: product.stock,
+        variants: product.variants ? product.variants : "",
+        status: product.status,
+        category: product.category,
+        sub_category: product.sub_category,
+        price: product.price ? product.price : 0,
+        stock: product.stock ? product.stock : 0,
       },
     });
     res.status(201).json({ messagge: "Prodotto creato con successo" });
