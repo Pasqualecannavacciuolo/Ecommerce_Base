@@ -436,9 +436,9 @@ export default function CreateProductPage() {
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="bozza">Bozza</SelectItem>
-                                  <SelectItem value="attivo">Attivo</SelectItem>
-                                  <SelectItem value="archiviato">
+                                  <SelectItem value="Bozza">Bozza</SelectItem>
+                                  <SelectItem value="Attivo">Attivo</SelectItem>
+                                  <SelectItem value="Archiviato">
                                     Archiviato
                                   </SelectItem>
                                 </SelectContent>
@@ -478,13 +478,13 @@ export default function CreateProductPage() {
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="accessori">
+                                  <SelectItem value="Accessori">
                                     Accessori
                                   </SelectItem>
-                                  <SelectItem value="elettronica">
+                                  <SelectItem value="Elettronica">
                                     Elettronica
                                   </SelectItem>
-                                  <SelectItem value="abbigliamento">
+                                  <SelectItem value="Abbigliamento">
                                     Abbigliamento
                                   </SelectItem>
                                 </SelectContent>
@@ -516,15 +516,13 @@ export default function CreateProductPage() {
                                   />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="accessori">
+                                  <SelectItem value="Magliette">
                                     Magliette
                                   </SelectItem>
-                                  <SelectItem value="elettronica">
+                                  <SelectItem value="Pantaloni">
                                     Pantaloni
                                   </SelectItem>
-                                  <SelectItem value="abbigliamento">
-                                    Scarpe
-                                  </SelectItem>
+                                  <SelectItem value="Scarpe">Scarpe</SelectItem>
                                 </SelectContent>
                               </Select>
                             )}
