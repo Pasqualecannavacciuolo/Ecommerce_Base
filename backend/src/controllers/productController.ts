@@ -137,3 +137,44 @@ export async function add_product(req: Request, res: Response) {
     return res.status(500).send("Errore durante la creazione del prodotto");
   }
 }
+
+/**
+ * Funzione che modifica un prodotto
+ * @param req
+ * @param res
+ * @returns
+ */
+export async function modify_product_by_id(req: Request, res: Response) {
+  const id = parseInt(req.params.id);
+  const productFromBody: Product = req.body;
+  console.log(productFromBody);
+  try {
+    const product = await prisma.product.update({
+      where: {
+        id: id,
+      },
+      data: {
+        product_name: productFromBody.product_name,
+        description: productFromBody.description,
+        variants: productFromBody.variants ? productFromBody.variants : "",
+        price: productFromBody.price ? productFromBody.price : 0,
+        stock: productFromBody.stock ? productFromBody.stock : 0,
+        status: productFromBody.status,
+        category: productFromBody.category,
+        sub_category: productFromBody.sub_category,
+      },
+    });
+    if (!product) {
+      return res.status(404).json({
+        message:
+          "Non e' stata trovata nessun prodotto con questo identificativo.",
+      });
+    }
+    res.status(200).json({
+      message: "Il prodotto e' stato aggiornato con successo.",
+    });
+  } catch (error) {
+    console.error("Errore durante il fetch dei dati:", error);
+    return res.status(500).send("Errore durante il fetch dei dati");
+  }
+}
