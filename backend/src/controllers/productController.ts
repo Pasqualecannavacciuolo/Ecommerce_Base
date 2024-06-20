@@ -118,7 +118,7 @@ export async function get_all_products_archiviati(req: Request, res: Response) {
  */
 export async function add_product(req: Request, res: Response) {
   const product: Product = req.body;
-  console.log(product);
+
   try {
     await prisma.product.create({
       data: {
