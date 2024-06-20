@@ -48,12 +48,14 @@ import {
 } from "./ui/select";
 import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Textarea } from "./ui/textarea";
+import { useNavigate } from "react-router-dom";
 
 const cookies = new Cookies(null, { path: "/" });
 
 const access_token = cookies.get("access_token");
 
 export default function ProductsDetails() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [product, setProduct] = useState<SimpleProduct | null>(null);
 
@@ -112,7 +114,7 @@ export default function ProductsDetails() {
     } catch (error) {
       console.log(error);
       // Gestisci il caso in cui l'access_token sia scaduto
-      if (error.message.includes("401")) {
+      if (error instanceof Error && error.message.includes("401")) {
         // Prova a fare il refresh del token o chiedi all'utente di autenticarsi di nuovo
       }
     }
